@@ -6,6 +6,7 @@ import CrawlWebsiteModal from '../components/CrawlWebsiteModal';
 import { getChatbot } from '~/lib/chatbots/queries';
 import Button from '~/core/ui/Button';
 import Heading from '~/core/ui/Heading';
+import { PlusCircleIcon } from '@heroicons/react/24/outline';
 
 interface ChatbotTrainingPageParams {
   params: {
@@ -27,21 +28,30 @@ async function ChatbotTrainingPage({
   const [data, chatbot] = await Promise.all([
     loadData(params.chatbot, { page }),
     getChatbot(getSupabaseServerComponentClient(), +params.chatbot),
-  ])
+  ]);
 
   const isEmpty = data.count === 0;
 
   if (isEmpty) {
-    return <EmptyState chatbotId={chatbot.id} url={chatbot.url} />
+    return <EmptyState chatbotId={chatbot.id} url={chatbot.url} />;
   }
 
   return (
-    <PageBody className={'py-container space-y-4'}>
-      <Heading type={4}>
-        Training
-      </Heading>
+    <PageBody className={'py-container space-y-2'}>
+      <div className={'flex space-x-4 justify-between items-end'}>
+        <div className={'flex flex-col space-y-2'}>
+          <Heading type={4}>Training</Heading>
 
-      <TrainingButton chatbotId={chatbot.id} url={chatbot.url} />
+          <p className={'text-sm'}>
+            Train your chatbot with new documents or see the status of previous
+            training jobs.
+          </p>
+        </div>
+
+        <div>
+          <TrainingButton chatbotId={chatbot.id} url={chatbot.url} />
+        </div>
+      </div>
 
       <JobsTable {...data} />
     </PageBody>
@@ -77,10 +87,14 @@ async function loadData(
 
 function TrainingButton(props: { chatbotId: number; url: string }) {
   return (
-    <div className={'flex mb-4'}>
+    <div className={'flex'}>
       <CrawlWebsiteModal {...props}>
         <Button size={'sm'} variant={'outline'}>
-          Train Chatbot with new documents
+          <PlusCircleIcon className={'h-4 w-4 mr-2'} />
+
+          <span>
+            Train Chatbot
+          </span>
         </Button>
       </CrawlWebsiteModal>
     </div>
@@ -90,15 +104,13 @@ function TrainingButton(props: { chatbotId: number; url: string }) {
 function EmptyState(props: { chatbotId: number; url: string }) {
   return (
     <>
-      <div className={'flex flex-col space-y-8 items-center justify-center flex-1'}>
+      <div
+        className={'flex flex-col space-y-8 items-center justify-center flex-1'}
+      >
         <div className={'flex flex-col space-y-2 items-center justify-center'}>
-          <Heading type={3}>
-            No previous imports found
-          </Heading>
+          <Heading type={3}>No previous imports found</Heading>
 
-          <div>
-            You have not imported any documents yet.
-          </div>
+          <div>You have not imported any documents yet.</div>
         </div>
 
         <div>

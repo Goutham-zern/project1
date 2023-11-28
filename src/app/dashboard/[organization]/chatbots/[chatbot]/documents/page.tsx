@@ -67,10 +67,14 @@ async function ChatbotPage({ params }: ChatbotPageParams) {
   }
 
   return (
-    <PageBody className={'py-container space-y-4'}>
+    <PageBody className={'py-container space-y-2'}>
       <Heading type={4}>
         Documents
       </Heading>
+
+      <p className={'text-sm'}>
+        These are the documents that your chatbot has learned from your website.
+      </p>
 
       <If
         condition={props.count}

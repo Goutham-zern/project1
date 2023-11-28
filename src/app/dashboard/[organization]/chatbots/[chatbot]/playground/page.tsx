@@ -25,10 +25,10 @@ async function ChatbotPlaygroundPage({ params }: ChatbotPlaygroundPageParams) {
 
   return (
     <>
-      <PageBody className={'py-container space-y-4'}>
+      <PageBody className={'py-container space-y-2'}>
         <Heading type={4}>Playground</Heading>
 
-        <p>
+        <p className={'text-sm'}>
           Play around with your chatbot here and see how it responds to
           different inputs.
         </p>
