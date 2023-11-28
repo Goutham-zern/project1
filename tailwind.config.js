@@ -2,7 +2,7 @@ const colors = require('tailwindcss/colors');
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ['./src/**/*.{ts,tsx,jsx,js}'],
+  content: ['./src/**/*.{ts,tsx,jsx,js}', 'packages/widget/src/**/*.{ts,tsx,jsx,js}'],
   darkMode: 'class',
   theme: {
     container: {
@@ -37,7 +37,7 @@ module.exports = {
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
-          ...colors.violet,
+          ...colors.slate,
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',

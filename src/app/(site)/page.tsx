@@ -30,25 +30,37 @@ export default function Home() {
         >
           <div className={'flex w-full flex-1 flex-col items-center space-y-8'}>
             <Pill>
-              <span>The leading SaaS Starter Kit for ambitious developers</span>
+              <span>
+                The Chatbot Assistant for busy founders
+              </span>
             </Pill>
 
             <HeroTitle>
-              <span>The SaaS Solution for</span>
+              <span>
+                The Chatbot Assistant for
+              </span>
               <span
                 className={
                   'bg-gradient-to-br bg-clip-text text-transparent' +
                   ' from-primary-400 to-primary-700 leading-[1.2]'
                 }
               >
-                developers and founders
+                for seamless customer support
               </span>
             </HeroTitle>
 
             <SubHeading className={'text-center'}>
-              <span>Here you can write a short description of your SaaS</span>
-              <span>This subheading is usually laid out on multiple lines</span>
-              <span>Impress your customers, straight to the point.</span>
+              <span>
+                The Chatbot Assistant for busy founders to seamlessly manage their customer support.
+              </span>
+
+              <span>
+                Stop wasting time on customer support. Let us handle it for you.
+              </span>
+
+              <span>
+                Start for free, upgrade when you are ready.
+              </span>
             </SubHeading>
 
             <div className={'flex flex-col items-center space-y-4'}>

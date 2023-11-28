@@ -1,4 +1,103 @@
-# MakerKit - SaaS Starter for Next.js and Supabase
+# Next.js Chatbot SaaS Template
+
+This application is a Chatbot SaaS App Demo bootstrapped with the Makerkit Next.js
+Supabase kit.
+
+This application is a demo app and may have bugs and issues.
+If you plan on using it in a production environment, please ensure you test
+it thoroughly and fix any issues you may find.
+
+## Details
+
+This application is a demo application that allows you to create a Chatbot SaaS application.
+
+Users can:
+1. Create various chatbots for each Organization
+2. Update the chatbot settings (e.g. name, description, etc.) and branding (e.g. colors, etc.)
+3. Crawl websites and train the chatbot using OpenAI
+4. Embed the chatbot on their website using a widget imported with a simple script tag
+
+## Requirements
+
+To make this application work, you will need to:
+
+1. Open a QStash account or replace the Task Queue with any other task queue service (e.g. AWS SQS, Google Cloud Tasks, Inngest, Trigger, etc.)
+2. Open an Open AI account and create an API key
+3. Open a Supabase account and create a project
+4. Open a Stripe account and create a product
+
+#### Adding the required environment variables
+
+To run the application, you will need to add the following environment variables:
+
+```
+## In the Next.js App
+NEXT_PUBLIC_CHATBOT_API_URL=/api/chat
+NEXT_PUBLIC_WIDGET_HOSTING_URL=makerkit-chatbot.js
+
+## In the Chatbot Widget
+NEXT_PUBLIC_CHATBOT_API_URL=http://localhost:3000/api/chat
+WIDGET_CSS_URL=./makerkit-chatbot.css
+CHATBOT_SDK_NAME=makerkit-chatbot.js
+WIDGET_SETTINGS_ENDPOINT=http://localhost:3000/api/chatbot
+```
+
+These values work for development. For production, you will need to change them to point to absolute URLs based on where you're hosting the application.
+
+For example, if you're hosting the application on `https://myapp.com`, you will need to change the values to:
+
+```
+## In the Next.js App
+NEXT_PUBLIC_CHATBOT_API_URL=https://myapp.com/api/chat
+NEXT_PUBLIC_WIDGET_HOSTING_URL=https://myapp.com/makerkit-chatbot.js
+
+## In the Chatbot Widget
+NEXT_PUBLIC_CHATBOT_API_URL=https://myapp.com/api/chat
+WIDGET_CSS_URL=https://myapp.com/makerkit-chatbot.css
+CHATBOT_SDK_NAME=https://myapp.com/makerkit-chatbot.js
+WIDGET_SETTINGS_ENDPOINT=https://myapp.com/api/chatbot
+```
+
+### Building the Chatbot Widget
+
+To build the Chatbot Widget, run the following command:
+
+```
+npm run build:widget
+```
+
+This will create a `makerkit-chatbot.js` file in the `dist` folder.
+
+### Testing a Chatbot Widget
+
+Create an `index.html` in the `dist` folder and paste the Chatbot Widget code (you can find it in the `Publish` tab of the Chatbot). For example:
+
+```html
+<script data-chatbot='2' src='makerkit-chatbot.js' />
+```
+
+Make sure to change the `data-chatbot` attribute to the ID of the chatbot you want to test.
+
+Then, open the file in your browser. You should see the chatbot widget.
+
+#### Adding a Plan to the Database
+
+You are free to specify your own limitations in the DB.
+
+To add a plan, you will insert a new row in the `plans` table. The `plans`
+table has the following information:
+
+```sql
+create table plans (
+  id serial primary key,
+  name text not null,
+  product_id text not null,
+  token_quota int not null,
+  chatbots_quota int not null
+);
+```
+
+---
 
 MakerKit is a SaaS starter project built with Next.js, Supabase and Tailwind CSS.
 

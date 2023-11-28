@@ -1,18 +1,52 @@
+'use client';
+
 import { Dialog, DialogContent } from '@radix-ui/react-dialog';
+import { DialogTrigger } from '~/core/ui/Dialog';
+import If from '~/core/ui/If';
+
+interface BaseSideDialogProps {
+  modal?: boolean;
+}
+
+type ControlledSideDialogProps = {
+  open: boolean;
+  onOpenChange: (value: boolean) => void;
+}
+
+type UncontrolledSideDialogProps = {
+  Trigger: React.ReactNode;
+}
+
+type SideDialogProps = (ControlledSideDialogProps | UncontrolledSideDialogProps) & BaseSideDialogProps;
 
 function SideDialog(
-  props: React.PropsWithChildren<{
-    open: boolean;
-    onOpenChange: (value: boolean) => void;
-    modal?: boolean;
-  }>,
+  props: React.PropsWithChildren<SideDialogProps>,
 ) {
+  const isControlled = 'open' in props;
+  const Trigger = ('Trigger' in props && props.Trigger) || null;
+
+  const DialogWrapper = (wrapperProps: React.PropsWithChildren) =>
+    isControlled ? (
+      <Dialog
+        open={props.open}
+        onOpenChange={(open) => {
+          if (!open) {
+            props.onOpenChange(false);
+          }
+        }}
+      >
+        {wrapperProps.children}
+      </Dialog>
+    ) : (
+      <Dialog>{wrapperProps.children}</Dialog>
+    );
+
   return (
-    <Dialog
-      modal={props.modal}
-      open={props.open}
-      onOpenChange={props.onOpenChange}
-    >
+    <DialogWrapper>
+      <If condition={Trigger}>
+        <DialogTrigger asChild>{Trigger}</DialogTrigger>
+      </If>
+
       <DialogContent
         onOpenAutoFocus={(e) => e.preventDefault()}
         className={
@@ -24,7 +58,7 @@ function SideDialog(
       >
         {props.children}
       </DialogContent>
-    </Dialog>
+    </DialogWrapper>
   );
 }
 

@@ -34,6 +34,147 @@ export interface Database {
   }
   public: {
     Tables: {
+      chatbots: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: number
+          name: string
+          organization_id: number
+          settings: Json
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: number
+          name: string
+          organization_id: number
+          settings?: Json
+          url: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: number
+          name?: string
+          organization_id?: number
+          settings?: Json
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chatbots_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      conversations: {
+        Row: {
+          chatbot_id: number
+          created_at: string
+          id: number
+        }
+        Insert: {
+          chatbot_id: number
+          created_at?: string
+          id?: number
+        }
+        Update: {
+          chatbot_id?: number
+          created_at?: string
+          id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_chatbot_id_fkey"
+            columns: ["chatbot_id"]
+            referencedRelation: "chatbots"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      documents: {
+        Row: {
+          content: string
+          created_at: string
+          embedding: string | null
+          id: number
+          metadata: Json
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          embedding?: string | null
+          id?: number
+          metadata?: Json
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          embedding?: string | null
+          id?: number
+          metadata?: Json
+        }
+        Relationships: []
+      }
+      jobs: {
+        Row: {
+          chatbot_id: number
+          completed_at: string | null
+          created_at: string
+          id: number
+          organization_id: number
+          status: Database["public"]["Enums"]["jobs_status"]
+          tasks_completed_count: number
+          tasks_count: number
+          tasks_succeeded_count: number
+          updated_at: string
+          uuid: string
+        }
+        Insert: {
+          chatbot_id: number
+          completed_at?: string | null
+          created_at?: string
+          id?: never
+          organization_id: number
+          status?: Database["public"]["Enums"]["jobs_status"]
+          tasks_completed_count?: number
+          tasks_count?: number
+          tasks_succeeded_count?: number
+          updated_at?: string
+          uuid?: string
+        }
+        Update: {
+          chatbot_id?: number
+          completed_at?: string | null
+          created_at?: string
+          id?: never
+          organization_id?: number
+          status?: Database["public"]["Enums"]["jobs_status"]
+          tasks_completed_count?: number
+          tasks_count?: number
+          tasks_succeeded_count?: number
+          updated_at?: string
+          uuid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_chatbot_id_fkey"
+            columns: ["chatbot_id"]
+            referencedRelation: "chatbots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       memberships: {
         Row: {
           code: string | null
@@ -73,6 +214,77 @@ export interface Database {
             foreignKeyName: "memberships_user_id_fkey"
             columns: ["user_id"]
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      messages: {
+        Row: {
+          conversation_id: number
+          created_at: string
+          id: number
+          sender: string
+          text: string
+        }
+        Insert: {
+          conversation_id: number
+          created_at?: string
+          id?: number
+          sender: string
+          text: string
+        }
+        Update: {
+          conversation_id?: number
+          created_at?: string
+          id?: number
+          sender?: string
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: number
+          link: string | null
+          organization_id: number
+          read: boolean
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: never
+          link?: string | null
+          organization_id: number
+          read?: boolean
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: never
+          link?: string | null
+          organization_id?: number
+          read?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_organization_id_fkey"
+            columns: ["organization_id"]
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           }
         ]
@@ -131,6 +343,27 @@ export interface Database {
             referencedColumns: ["id"]
           }
         ]
+      }
+      plans: {
+        Row: {
+          board_quota: number
+          name: string
+          product_id: string
+          task_quota: number
+        }
+        Insert: {
+          board_quota: number
+          name: string
+          product_id: string
+          task_quota: number
+        }
+        Update: {
+          board_quota?: number
+          name?: string
+          product_id?: string
+          task_quota?: number
+        }
+        Relationships: []
       }
       subscriptions: {
         Row: {
@@ -257,6 +490,31 @@ export interface Database {
         }
         Returns: number
       }
+      kw_match_documents: {
+        Args: {
+          query_text: string
+          match_count: number
+        }
+        Returns: {
+          id: number
+          content: string
+          metadata: Json
+          similarity: number
+        }[]
+      }
+      match_documents: {
+        Args: {
+          query_embedding: string
+          match_count?: number
+          filter?: Json
+        }
+        Returns: {
+          id: number
+          content: string
+          metadata: Json
+          similarity: number
+        }[]
+      }
       transfer_organization: {
         Args: {
           org_id: number
@@ -266,6 +524,7 @@ export interface Database {
       }
     }
     Enums: {
+      jobs_status: "pending" | "running" | "completed" | "failed"
       subscription_status:
         | "active"
         | "trialing"

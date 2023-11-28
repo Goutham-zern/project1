@@ -13,7 +13,7 @@ const NEXT_ACTION_REDIRECT_HEADER = 'x-action-redirect';
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|locales|assets|api/stripe/webhook).*)',
+    '/((?!_next/static|_next/image|favicon.ico|locales|assets|api/stripe/webhook|api/.*).*)',
   ],
 };
 

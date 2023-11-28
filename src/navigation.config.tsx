@@ -1,15 +1,22 @@
-import { Cog8ToothIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
+import { ChatBubbleBottomCenterTextIcon, ChatBubbleLeftIcon, Cog8ToothIcon } from '@heroicons/react/24/outline';
 import configuration from '~/configuration';
 
 const NAVIGATION_CONFIG = (organization: string) => ({
   items: [
     {
-      label: 'common:dashboardTabLabel',
+      label: 'common:chatbotsTabLabel',
       path: getPath(organization, ''),
       Icon: ({ className }: { className: string }) => {
-        return <Squares2X2Icon className={className} />;
+        return <ChatBubbleLeftIcon className={className} />;
       },
-      end: true,
+      end: false,
+    },
+    {
+      label: 'common:conversationsTabLabel',
+      path: getPath(organization, 'conversations'),
+      Icon: ({ className }: { className: string }) => {
+        return <ChatBubbleBottomCenterTextIcon className={className} />;
+      },
     },
     {
       label: 'common:settingsTabLabel',
