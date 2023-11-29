@@ -18,8 +18,13 @@ import {
 
 import { ChatbotSettings } from '~/components/chatbot/lib/types';
 
+interface SitemapFilters {
+  allow: string[];
+  disallow: string[];
+}
+
 export const getSitemapLinks = withSession(
-  async (params: { chatbotId: number; csrfToken: string }) => {
+  async (params: { chatbotId: number; filters: SitemapFilters; csrfToken: string }) => {
     const client = getSupabaseServerActionClient();
     const logger = getLogger();
     const crawler = new Crawler();
@@ -33,28 +38,32 @@ export const getSitemapLinks = withSession(
 
     const chatbot = await getChatbot(client, params.chatbotId);
     const { sites } = await crawler.getSitemapLinks(chatbot.url);
+    const links = crawler.filterLinks(sites, params.filters);
 
     logger.info(
       {
-        numberOfPages: sites.length,
+        numberOfPages: links.length,
       },
       `Sitemap links retrieved successfully.`,
     );
 
     return {
       numberOfPages: sites.length,
+      numberOfFilteredPages: links.length,
     };
   },
 );
 
 export const createChatbotCrawlingJob = withSession(
-  async (params: { chatbotId: number; csrfToken: string }) => {
+  async (params: {
+    chatbotId: number;
+    filters: SitemapFilters;
+    csrfToken: string;
+  }) => {
     const taskQueue = new ChatbotTaskQueue();
     const client = getSupabaseServerActionClient();
 
-    await taskQueue.createJob(client, {
-      chatbotId: params.chatbotId,
-    });
+    await taskQueue.createJob(client, params);
 
     revalidatePath(
       `/dashboard/[organization]/chatbots/[chatbot]/training`,

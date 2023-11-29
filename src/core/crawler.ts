@@ -16,6 +16,32 @@ export default class Crawler {
     return await response.text();
   }
 
+  filterLinks(
+    sites: string[],
+    {
+      allow,
+      disallow,
+    }: {
+      allow: string[];
+      disallow: string[];
+    },
+  ) {
+    const allowList = allow.filter(Boolean);
+    const disallowList = disallow.filter(Boolean);
+
+    return sites.filter((site) => {
+      const isAllowed = allowList.length
+        ? allowList.some((pattern) => site.includes(pattern))
+        : true;
+
+      const isDisallowed = disallowList.length
+        ? disallowList.some((pattern) => site.includes(pattern))
+        : false;
+
+      return isAllowed && !isDisallowed;
+    });
+  }
+
   /**
    * Get the URL of the sitemap for a given website URL. The sitemap URL is inferred from the website URL.
    * If the website URL ends with `.xml`, it is assumed to be the sitemap URL.

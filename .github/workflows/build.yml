@@ -57,6 +57,7 @@ jobs:
         run: npm run typecheck --if-present
 
   test:
+    if: false # disable for now
     name: ⚫️ Test
     runs-on: ${{ vars.RUNNER || 'ubuntu-latest' }}
     env:

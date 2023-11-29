@@ -18,23 +18,37 @@ export default class ChatbotTaskQueue {
   private readonly queue = new QStashTaskQueue<TaskParams>();
 
   private static MAX_LINKS_PER_JOB = 30;
-  private static DELAY_BETWEEN_JOBS_MS = 500
+  private static DELAY_BETWEEN_JOBS_MS = 500;
   private static DELAY_BETWEEN_TASKS_S = 25;
 
-  async createJob(client: SupabaseClient, params: {
-    chatbotId: number;
-  }) {
+  async createJob(
+    client: SupabaseClient,
+    params: {
+      chatbotId: number;
+      filters: {
+        allow: string[];
+        disallow: string[];
+      };
+    },
+  ) {
     const logger = getLogger();
     const crawler = new Crawler();
 
-    logger.info({
-      chatbotId: params.chatbotId,
-    }, `Creating chatbot crawling job...`);
+    logger.info(
+      {
+        chatbotId: params.chatbotId,
+      },
+      `Creating chatbot crawling job...`,
+    );
 
     const chatbot = await getChatbot(client, params.chatbotId);
-    const { sites: links } = await crawler.getSitemapLinks(chatbot.url);
+    const { sites } = await crawler.getSitemapLinks(chatbot.url);
+    const links = crawler.filterLinks(sites, params.filters);
 
-    const totalJobs = Math.ceil(links.length / ChatbotTaskQueue.MAX_LINKS_PER_JOB);
+    const totalJobs = Math.ceil(
+      links.length / ChatbotTaskQueue.MAX_LINKS_PER_JOB,
+    );
+
     const jobsGroups: Array<string[]> = [];
 
     for (let n = 0; n < totalJobs; n++) {
@@ -42,27 +56,33 @@ export default class ChatbotTaskQueue {
 
       const jobSites = links.slice(
         startIndex,
-        startIndex + ChatbotTaskQueue.MAX_LINKS_PER_JOB
+        startIndex + ChatbotTaskQueue.MAX_LINKS_PER_JOB,
       );
 
       jobsGroups.push(jobSites);
     }
 
     if (jobsGroups.length === 0) {
-      logger.info({
-        chatbotId: params.chatbotId,
-        organizationId: chatbot.organizationId,
-      }, `No links found. Skipping job creation.`);
+      logger.info(
+        {
+          chatbotId: params.chatbotId,
+          organizationId: chatbot.organizationId,
+        },
+        `No links found. Skipping job creation.`,
+      );
 
       throw new Error('No links found');
     }
 
-    logger.info({
-      numberOfJobs: totalJobs,
-      numberOfLinks: links.length,
-      chatbotId: params.chatbotId,
-      organizationId: chatbot.organizationId,
-    }, `Fetched SiteMap links. Inserting job...`);
+    logger.info(
+      {
+        numberOfJobs: totalJobs,
+        numberOfLinks: links.length,
+        chatbotId: params.chatbotId,
+        organizationId: chatbot.organizationId,
+      },
+      `Fetched SiteMap links. Inserting job...`,
+    );
 
     const job = await insertJob(client, {
       chatbotId: params.chatbotId,
@@ -71,25 +91,34 @@ export default class ChatbotTaskQueue {
     });
 
     if (job.error) {
-      logger.error({
-        chatbotId: params.chatbotId,
-        error: job.error,
-        organizationId: chatbot.organizationId,
-      }, `Error inserting job`);
+      logger.error(
+        {
+          chatbotId: params.chatbotId,
+          error: job.error,
+          organizationId: chatbot.organizationId,
+        },
+        `Error inserting job`,
+      );
 
       throw job.error;
     }
 
-    logger.info({
-      chatbotId: params.chatbotId,
-      jobId: job.data.id,
-    }, `Successfully created job record for chatbot`);
+    logger.info(
+      {
+        chatbotId: params.chatbotId,
+        jobId: job.data.id,
+      },
+      `Successfully created job record for chatbot`,
+    );
 
-    logger.info({
-      chatbotId: params.chatbotId,
-      jobId: job.data.id,
-      numberOfTasks: jobsGroups.length,
-    }, `Creating tasks...`);
+    logger.info(
+      {
+        chatbotId: params.chatbotId,
+        jobId: job.data.id,
+        numberOfTasks: jobsGroups.length,
+      },
+      `Creating tasks...`,
+    );
 
     // for each job, we delay it by {ChatbotTaskQueue.DELAY_BETWEEN_JOBS_MS} ms
     // to be nice to the website we're crawling
@@ -109,15 +138,22 @@ export default class ChatbotTaskQueue {
     // delay between each batch in seconds
     const delayBetweenTasks = ChatbotTaskQueue.DELAY_BETWEEN_TASKS_S;
 
-    const results = await parallelizeBatch(requests, concurrentBatches, delayBetweenTasks);
+    const results = await parallelizeBatch(
+      requests,
+      concurrentBatches,
+      delayBetweenTasks,
+    );
     const jobsStarted = results.filter((result) => result.messageId);
 
-    logger.info({
-      chatbotId: params.chatbotId,
-      jobId: job.data.id,
-      numberOfJobs: results.length,
-      numberOfJobsStarted: jobsStarted.length,
-    }, `Finalized job creation`);
+    logger.info(
+      {
+        chatbotId: params.chatbotId,
+        jobId: job.data.id,
+        numberOfJobs: results.length,
+        numberOfJobsStarted: jobsStarted.length,
+      },
+      `Finalized job creation`,
+    );
   }
 
   async verify(request: Request) {
