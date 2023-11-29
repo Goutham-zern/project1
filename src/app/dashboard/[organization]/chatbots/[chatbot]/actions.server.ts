@@ -15,6 +15,7 @@ import {
   deleteDocument,
   updateChatbotSettings,
 } from '~/lib/chatbots/mutations';
+
 import { ChatbotSettings } from '~/components/chatbot/lib/types';
 
 export const getSitemapLinks = withSession(
@@ -68,9 +69,36 @@ export const createChatbotCrawlingJob = withSession(
 
 export const deleteDocumentAction = withSession(async (data: FormData) => {
   const client = getSupabaseServerActionClient();
-
+  const logger = getLogger();
   const documentId = z.coerce.number().parse(data.get('documentId'));
-  await deleteDocument(client, documentId);
+
+  logger.info(
+    {
+      documentId,
+    },
+    `Deleting document...`,
+  );
+
+  const response = await deleteDocument(client, documentId);
+
+  if (response.error) {
+    logger.error(
+      {
+        documentId,
+        error: response.error,
+      },
+      `Failed to delete document.`,
+    );
+
+    throw new Error(`Failed to delete document.`);
+  }
+
+  logger.info(
+    {
+      documentId,
+    },
+    `Document deleted successfully.`,
+  );
 
   revalidatePath(
     `/dashboard/[organization]/chatbots/[chatbot]/documents`,
@@ -97,6 +125,7 @@ export const saveChatbotSettingsAction = withSession(
       .parse(Object.fromEntries(data));
 
     const client = getSupabaseServerActionClient();
+    const logger = getLogger();
 
     const settings: ChatbotSettings = {
       title: body.title,
@@ -108,13 +137,35 @@ export const saveChatbotSettingsAction = withSession(
       },
     };
 
+    logger.info(
+      {
+        chatbotId,
+      },
+      `Updating chatbot settings...`,
+    );
+
     const { error } = await updateChatbotSettings(client, chatbotId, settings);
 
     if (error) {
+      logger.error(
+        {
+          chatbotId,
+          error,
+        },
+        `Failed to update chatbot settings.`,
+      );
+
       return {
         success: false,
       };
     }
+
+    logger.info(
+      {
+        chatbotId,
+      },
+      `Chatbot settings updated successfully.`,
+    );
 
     revalidatePath(
       `/dashboard/[organization]/chatbots/[chatbot]/design`,

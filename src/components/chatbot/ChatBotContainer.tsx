@@ -20,7 +20,7 @@ import ChatBotBubble from './ChatBotBubble';
 import { ChatBotContext } from './ChatbotContext';
 
 import { ChatBotMessageRole } from './lib/message-role.enum';
-import MarkdownRenderer from '~/components/MarkdownRenderer';
+import MarkdownRenderer from '~/core/ui/markdown/MarkdownRenderer';
 
 const NEXT_PUBLIC_CHATBOT_API_URL = process.env.NEXT_PUBLIC_CHATBOT_API_URL;
 

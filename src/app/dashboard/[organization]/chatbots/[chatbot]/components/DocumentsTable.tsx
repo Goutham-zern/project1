@@ -17,6 +17,7 @@ import {
 import Modal from '~/core/ui/Modal';
 import Button from '~/core/ui/Button';
 import { deleteDocumentAction } from '~/app/dashboard/[organization]/chatbots/[chatbot]/actions.server';
+import DeleteDocumentModal from '~/app/dashboard/[organization]/chatbots/[chatbot]/components/DeleteDocumentModal';
 
 type Data = Awaited<ReturnType<typeof getChatbotDocuments>>;
 
@@ -94,29 +95,4 @@ function getColumns(): ColumnDef<Data['data'][0]>[] {
       },
     },
   ];
-}
-
-function DeleteDocumentModal({
-  documentId,
-  children,
-}: React.PropsWithChildren<{
-  documentId: number;
-}>) {
-  return (
-    <Modal Trigger={children} heading={`Delete Document`}>
-      <div className={'flex flex-col space-y-6'}>
-        <div>Are you sure you want to delete this document?</div>
-
-        <form>
-          <input type="hidden" name={'documentId'} value={documentId} />
-
-          <div className={'flex justify-end'}>
-            <Button formAction={deleteDocumentAction} variant={'destructive'}>
-              Yes, Delete
-            </Button>
-          </div>
-        </form>
-      </div>
-    </Modal>
-  );
 }

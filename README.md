@@ -21,7 +21,7 @@ Users can:
 
 To make this application work, you will need to:
 
-1. Open a QStash account or replace the Task Queue with any other task queue service (e.g. AWS SQS, Google Cloud Tasks, Inngest, Trigger, etc.)
+1. Open an Upstash (QStash) account or replace the Task Queue with any other task queue service (e.g. AWS SQS, Google Cloud Tasks, Inngest, Trigger, etc.)
 2. Open an Open AI account and create an API key
 3. Open a Supabase account and create a project
 4. Open a Stripe account and create a product
@@ -93,11 +93,45 @@ create table plans (
   name text not null,
   product_id text not null,
   token_quota int not null,
+  embeddings_token_quota int not null,
   chatbots_quota int not null
 );
 ```
 
+1. The `token_quota` is the number of tokens the user can use per month
+2. The `embeddings_token_quota` is the number of tokens the user can use to train the chatbot per month
+3. The `chatbots_quota` is the number of chatbots the user can create
+
+## QStash Environment Variables
+
+To run the application, you will need to add the following environment variables:
+
+```
+QSTASH_TOKEN=
+QSTASH_URL=
+QSTASH_CURRENT_SIGNING_KEY=
+QSTASH_NEXT_SIGNING_KEY=
+```
+
+You can grab these values from your Upstash QStash dashboard.
+
+NB: You can change the Task Queue to any other service you prefer, such as AWS SQS, Google Cloud Tasks, Inngest, Trigger, etc. You will need to adjust the code accordingly.
+
+### QStash endpoint
+
+To test your queues locally, you need to run the QStash endpoint locally. You have various options, such as creating a tunnel with Ngrok, Cloudflare Tunnel, or even VSCode Port Forwarding.
+
+In such case, your `QSTASH_URL` will be the URL of the tunnel. Assuming your tunnel URL is `https://next-supabase-chatbot.ngrok.com`, you will set the following environment variable:
+
+```
+QSTASH_URL=https://next-supabase-chatbot.ngrok.com/api/tasks/execute
+```
+
+As you can see, you will need to add `/api/tasks/execute` at the end of the URL, which points to the `execute` endpoint of the `tasks` API.
+
 ---
+
+# Next.js Supabase SaaS Starter Kit
 
 MakerKit is a SaaS starter project built with Next.js, Supabase and Tailwind CSS.
 
