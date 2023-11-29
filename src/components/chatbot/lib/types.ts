@@ -6,7 +6,7 @@ interface Branding {
   textColor: string;
 }
 
-interface ChatbotSettings {
+export interface ChatbotSettings {
   title: string;
   position: Position;
   branding: Branding;

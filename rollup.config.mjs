@@ -7,6 +7,8 @@ import typescript from '@rollup/plugin-typescript';
 import terser from '@rollup/plugin-terser';
 import injectProcessEnv from 'rollup-plugin-inject-process-env';
 import postcss from 'rollup-plugin-postcss';
+import { visualizer } from "rollup-plugin-visualizer";
+
 import { config } from 'dotenv';
 
 export default {
@@ -24,10 +26,12 @@ export default {
   },
   plugins: [
     tsConfigPaths({
-      tsConfigPath: './tsconfig.json'
+      tsConfigPath: './packages/widget/tsconfig.json'
     }),
     replace({ preventAssignment: true }),
-    typescript(),
+    typescript({
+      tsconfig: './packages/widget/tsconfig.json',
+    }),
     nodeResolve({ extensions: ['.tsx', '.ts', '.jsx', '.js', '.json'] }),
     babel({
       babelHelpers: 'bundled',
@@ -65,6 +69,7 @@ export default {
         drop_debugger: true
       },
       output: { quote_style: 1 }
-    })
+    }),
+    visualizer(),
   ]
 };

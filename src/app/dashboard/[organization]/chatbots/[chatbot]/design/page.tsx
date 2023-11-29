@@ -3,6 +3,7 @@ import Heading from '~/core/ui/Heading';
 import DesignChatbotContainer from './components/DesignChatbotContainer';
 import { getChatbot } from '~/lib/chatbots/queries';
 import getSupabaseServerComponentClient from '~/core/supabase/server-component-client';
+import { ChatbotSettings } from '~/components/chatbot/lib/types';
 
 interface ChatbotDesignPageParams {
   params: {

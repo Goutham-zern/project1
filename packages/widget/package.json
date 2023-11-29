@@ -13,6 +13,7 @@
     "vite": "^5.0.2",
     "dotenv": "^16.3.1",
     "rollup-plugin-inject-process-env": "latest",
-    "rollup-plugin-postcss": "latest"
+    "rollup-plugin-postcss": "latest",
+    "rollup-plugin-visualizer": "latest"
   }
 }

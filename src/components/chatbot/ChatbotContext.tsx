@@ -3,6 +3,7 @@ import { createContext, useEffect } from 'react';
 import useChatBotState, {
   ChatBotActionTypes,
 } from './lib/chatbot-state.reducer';
+import { ChatbotSettings } from '~/components/chatbot/lib/types';
 
 interface ChatBotContextState {
   state: ReturnType<typeof useChatBotState>[0];

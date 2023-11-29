@@ -1,6 +1,7 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Database, Json } from '~/database.types';
 import { CHATBOTS_TABLE, DOCUMENTS_TABLE } from '~/lib/db-tables';
+import { ChatbotSettings } from '~/components/chatbot/lib/types';
 
 type Client = SupabaseClient<Database>;
 

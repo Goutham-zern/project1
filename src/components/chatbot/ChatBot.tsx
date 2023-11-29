@@ -2,6 +2,7 @@
 
 import ChatBotContainer from './ChatBotContainer';
 import ChatBotContextProvider from '~/components/chatbot/ChatbotContext';
+import { ChatbotSettings } from '~/components/chatbot/lib/types';
 
 interface ChatBotProps {
   chatbotId: number;

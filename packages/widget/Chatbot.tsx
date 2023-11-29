@@ -2,8 +2,9 @@ import './chatbot.css';
 
 import { hydrateRoot } from 'react-dom/client';
 import { lazy, Suspense, useEffect, useState } from 'react';
+import { ChatbotSettings } from '~/components/chatbot/lib/types';
 
-const Chatbot = lazy(() => import('../../src/components/chatbot/ChatBot'));
+const Chatbot = lazy(() => import('~/components/chatbot/ChatBot'));
 
 const SDK_NAME = process.env.CHATBOT_SDK_NAME;
 const SETTINGS_ENDPOINT = process.env.WIDGET_SETTINGS_ENDPOINT;

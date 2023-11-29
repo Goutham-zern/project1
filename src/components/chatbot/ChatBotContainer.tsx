@@ -18,9 +18,9 @@ import chatbotMessagesStore from './lib/chatbot-messages-store';
 
 import ChatBotBubble from './ChatBotBubble';
 import { ChatBotContext } from './ChatbotContext';
-import ChatMessageMarkdownRenderer from './ChatMessageMarkdownRenderer';
 
 import { ChatBotMessageRole } from './lib/message-role.enum';
+import MarkdownRenderer from '~/components/MarkdownRenderer';
 
 const NEXT_PUBLIC_CHATBOT_API_URL = process.env.NEXT_PUBLIC_CHATBOT_API_URL;
 
@@ -61,8 +61,8 @@ function ChatBotContainer(
       onLoadingChange(false);
     },
     headers: {
-      'x-chatbot-id': props.chatbotId.toString()
-    }
+      'x-chatbot-id': props.chatbotId.toString(),
+    },
   });
 
   useEffect(() => {
@@ -71,55 +71,57 @@ function ChatBotContainer(
     chatbotMessagesStore.saveMessages(messages, props.storageKey);
   }, [messages, scrollToBottom]);
 
-  if (!state.isOpen) {
-    return <ChatBotBubble />;
-  }
-
   return (
-    <ChatbotContentContainer>
-      <div className={'flex flex-col h-full'}>
-        <ChatBotHeader
-          onClose={() => onOpenChange(false)}
-          onRefresh={() => {
-            chatbotMessagesStore.saveMessages([], props.storageKey);
-            setMessages(chatbotMessagesStore.loadMessages(props.storageKey));
-          }}
-        />
+    <>
+      <If condition={state.isOpen}>
+        <ChatbotContentContainer position={state.settings.position}>
+          <div className={'flex flex-col h-full'}>
+            <ChatBotHeader
+              onClose={() => onOpenChange(false)}
+              onRefresh={() => {
+                chatbotMessagesStore.saveMessages([], props.storageKey);
+                setMessages(chatbotMessagesStore.loadMessages(props.storageKey));
+              }}
+            />
 
-        <div
-          ref={(div) => (scrollingDiv.current = div ?? undefined)}
-          className={'overflow-y-auto flex flex-col flex-1'}
-        >
-          <ChatBotMessages
-            isLoading={state.isLoading}
-            messages={messages}
-            defaultPrompts={props.defaultPrompts}
-            onPromptClick={(content) => {
-              onLoadingChange(true);
+            <div
+              ref={(div) => (scrollingDiv.current = div ?? undefined)}
+              className={'overflow-y-auto flex flex-col flex-1'}
+            >
+              <ChatBotMessages
+                isLoading={state.isLoading}
+                messages={messages}
+                defaultPrompts={props.defaultPrompts}
+                onPromptClick={(content) => {
+                  onLoadingChange(true);
 
-              return append({
-                role: ChatBotMessageRole.User,
-                content,
-              });
-            }}
-          />
-        </div>
+                  return append({
+                    role: ChatBotMessageRole.User,
+                    content,
+                  });
+                }}
+              />
+            </div>
 
-        <If condition={error}>
-          <div className={'p-4'}>
-            <span className={'text-xs text-red-500'}>{error}</span>
+            <If condition={error}>
+              <div className={'p-4'}>
+                <span className={'text-xs text-red-500'}>{error}</span>
+              </div>
+            </If>
+
+            <ChatBotInput
+              isLoading={isLoading || state.isLoading}
+              input={input}
+              disabled={state.isDisabled}
+              handleSubmit={handleSubmit}
+              handleInputChange={handleInputChange}
+            />
           </div>
-        </If>
+        </ChatbotContentContainer>
+      </If>
 
-        <ChatBotInput
-          isLoading={isLoading || state.isLoading}
-          input={input}
-          disabled={state.isDisabled}
-          handleSubmit={handleSubmit}
-          handleInputChange={handleInputChange}
-        />
-      </div>
-    </ChatbotContentContainer>
+      <ChatBotBubble />
+    </>
   );
 }
 
@@ -232,7 +234,7 @@ function ChatBotMessage({ message }: { message: Message }) {
   const style = isUser
     ? {
         backgroundColor: primaryColor,
-        color: textColor
+        color: textColor,
       }
     : {};
 
@@ -253,9 +255,9 @@ function ChatBotMessage({ message }: { message: Message }) {
         </span>
 
         <div style={style} className={className}>
-          <ChatMessageMarkdownRenderer className="overflow-x-hidden prose break-words dark:prose-invert prose-p:leading-relaxed prose-pre:p-0">
+          <MarkdownRenderer className="overflow-x-hidden prose break-words dark:prose-invert prose-p:leading-relaxed prose-pre:p-0">
             {message.content}
-          </ChatMessageMarkdownRenderer>
+          </MarkdownRenderer>
         </div>
       </div>
     </div>
@@ -455,16 +457,27 @@ function useScrollToBottom(
   );
 }
 
-function ChatbotContentContainer(props: React.PropsWithChildren) {
+function ChatbotContentContainer(
+  props: React.PropsWithChildren<{
+    position?: 'bottom-left' | 'bottom-right';
+  }>,
+) {
+  const position = props.position ?? 'bottom-right';
+
+  const className = classNames({
+    'bottom-0 md:bottom-36 md:right-8': position === 'bottom-right',
+    'bottom-0 md:bottom-36 md:left-8': position === 'bottom-left',
+  });
+
   return (
     <div
-      className={
-        'animate-in fade-in z-50 slide-in-from-bottom-16 duration-200' +
-        ' bg-white dark:bg-dark-800 font-sans' +
-        ' fixed md:right-8 md:rounded-xl ease-out slide-out-to-bottom-8' +
-        ' bottom-0 md:bottom-8 w-full h-[60vh] md:w-[40vw] xl:w-[26vw]' +
-        ' shadow-2xl zoom-in-95 border dark:border-dark-700'
-      }
+      className={classNames(
+        'animate-in fixed z-50 fade-in slide-in-from-bottom-24 duration-200' +
+          ' bg-white dark:bg-dark-800 font-sans md:rounded-lg' +
+          ' w-full h-[60vh] md:w-[40vw] xl:w-[26vw]' +
+          ' shadow-2xl zoom-in-90 border dark:border-dark-700',
+        className,
+      )}
     >
       {props.children}
     </div>

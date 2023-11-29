@@ -10,10 +10,12 @@ import Crawler from '~/core/crawler';
 import { getChatbot } from '~/lib/chatbots/queries';
 import { withSession } from '~/core/generic/actions-utils';
 import ChatbotTaskQueue from '~/lib/chatbots/chatbot-task-queue';
+
 import {
   deleteDocument,
   updateChatbotSettings,
 } from '~/lib/chatbots/mutations';
+import { ChatbotSettings } from '~/components/chatbot/lib/types';
 
 export const getSitemapLinks = withSession(
   async (params: { chatbotId: number; csrfToken: string }) => {

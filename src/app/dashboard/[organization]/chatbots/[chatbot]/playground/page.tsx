@@ -4,6 +4,7 @@ import { PageBody } from '~/core/ui/Page';
 import Heading from '~/core/ui/Heading';
 import { getChatbot } from '~/lib/chatbots/queries';
 import getSupabaseServerComponentClient from '~/core/supabase/server-component-client';
+import { ChatbotSettings } from '~/components/chatbot/lib/types';
 
 const ChatBot = dynamic(() => import('~/components/chatbot/ChatBot'), {
   ssr: false,

@@ -23,6 +23,7 @@ import {
 import Label from '~/core/ui/Label';
 import chatbotMessagesStore from '~/components/chatbot/lib/chatbot-messages-store';
 import { saveChatbotSettingsAction } from '../../actions.server';
+import { ChatbotSettings } from '~/components/chatbot/lib/types';
 
 const ChatBot = dynamic(() => import('~/components/chatbot/ChatBot'), {
   ssr: false,
