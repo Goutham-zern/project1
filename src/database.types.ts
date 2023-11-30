@@ -346,22 +346,25 @@ export interface Database {
       }
       plans: {
         Row: {
-          board_quota: number
+          max_chatbots: number
+          max_documents: number
+          max_messages: number
           name: string
-          product_id: string
-          task_quota: number
+          price_id: string
         }
         Insert: {
-          board_quota: number
+          max_chatbots: number
+          max_documents: number
+          max_messages: number
           name: string
-          product_id: string
-          task_quota: number
+          price_id: string
         }
         Update: {
-          board_quota?: number
+          max_chatbots?: number
+          max_documents?: number
+          max_messages?: number
           name?: string
-          product_id?: string
-          task_quota?: number
+          price_id?: string
         }
         Relationships: []
       }
@@ -453,6 +456,25 @@ export interface Database {
         }
         Returns: Json
       }
+      can_create_chatbot: {
+        Args: {
+          org_id: number
+        }
+        Returns: boolean
+      }
+      can_index_documents: {
+        Args: {
+          org_id: number
+          requested_documents: number
+        }
+        Returns: boolean
+      }
+      can_respond_to_message: {
+        Args: {
+          chatbot_id: number
+        }
+        Returns: boolean
+      }
       can_update_user_role: {
         Args: {
           organization_id: number
@@ -489,6 +511,12 @@ export interface Database {
           membership_id: number
         }
         Returns: number
+      }
+      get_subscription_price_id: {
+        Args: {
+          org_id: number
+        }
+        Returns: string
       }
       kw_match_documents: {
         Args: {

@@ -123,8 +123,13 @@ async function loadChatbots(uid: string) {
     throw new Error(`No organization found`);
   }
 
-  //TODO: check if user can create chatbot
-  const canCreateChatbot = true;
+  const canCreateChatbot = client.rpc('can_create_chatbot', {
+    org_id: organization,
+  }).then(response => {
+    console.log(response);
+    return response.data ?? false;
+  });
+
   const chatbots = getChatbots(client, organization);
 
   return Promise.all([chatbots, canCreateChatbot]);

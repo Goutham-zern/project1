@@ -76,10 +76,11 @@ create table notifications (
 
 create table plans (
   name text not null,
-  product_id text not null,
-  task_quota int not null,
-  board_quota int not null,
-  primary key (product_id)
+  price_id text not null,
+  max_documents bigint not null,
+  max_messages bigint not null,
+  max_chatbots bigint not null,
+  primary key (price_id)
 );
 
 alter table chatbots enable row level security;
@@ -135,8 +136,105 @@ end;
 $$ language plpgsql;
 
 create index on documents using ivfflat (embedding vector_cosine_ops)
-with
-  (lists = 100);
+with (lists = 100);
+
+create or replace function get_subscription_price_id(org_id bigint)
+returns text as $$
+declare
+    stripe_price_id text;
+begin
+    select price_id into stripe_price_id from subscriptions
+    join organizations_subscriptions on subscriptions.id = organizations_subscriptions.subscription_id
+    where org_id = organizations_subscriptions.organization_id
+    and subscriptions.status = 'active' or subscriptions.status = 'trialing';
+
+    return stripe_price_id;
+end; $$
+language plpgsql;
+
+create or replace function can_create_chatbot(org_id bigint)
+returns bool as $$
+declare
+    chatbot_count bigint;
+    stripe_price_id text;
+    quota bigint;
+begin
+    select count(*) into chatbot_count from chatbots where org_id = organization_id;
+
+    select get_subscription_price_id(org_id) into stripe_price_id;
+
+    /* If no subscription is found, then the user is on the free plan */
+    if stripe_price_id is null then
+        return chatbot_count < 1;
+    end if;
+
+    select max_chatbots into quota from plans where price_id = stripe_price_id;
+
+    return max_chatbots < quota;
+end; $$
+language plpgsql;
+
+create or replace function can_index_documents(org_id bigint, requested_documents bigint)
+returns bool as $$
+declare
+    documents_quota bigint;
+    stripe_price_id text;
+begin
+    select get_subscription_price_id(org_id) into stripe_price_id;
+    select max_documents from plans where organization_id = org_id into documents_quota;
+
+    return documents_quota >= requested_documents;
+end; $$
+language plpgsql;
+
+create or replace function can_respond_to_message(chatbot_id bigint)
+returns bool as $$
+declare
+    period_start timestamptz;
+    period_end timestamptz;
+    stripe_price_id text;
+    subscription_interval text;
+    messages_sent bigint;
+    max_messages_quota bigint;
+    org_id bigint;
+begin
+    select organization_id into org_id from chatbots where id = chatbot_id;
+
+    -- select the subscription period
+    select period_starts_at, period_ends_at, price_id, interval into period_start, period_end, stripe_price_id, subscription_interval from subscriptions
+    join organizations_subscriptions on subscriptions.id = organizations_subscriptions.subscription_id
+    where organizations_subscriptions.organization_id = org_id;
+
+    -- If no subscription is found, then the user is on the free plan
+    -- and the quota is 200 messages per month
+    if stripe_price_id is null then
+        select count (*) from messages
+        where organization_id = org_id
+        and created_at >= date_trunc('month', current_date - interval '1 month')
+        and created_at < date_trunc('month', current_date)
+        into messages_sent;
+
+        return messages_sent < 200;
+    end if;
+
+    -- select the max number of messages allowed in the current period
+    select messages from plans where plans.price_id = stripe_price_id into max_messages_quota;
+
+    -- select the number of messages sent in the current period
+    select count (*) from messages
+    where organization_id = org_id
+    and now() between period_start
+    and period_end
+    into messages_sent;
+
+    -- If the subscription is yearly, then we need to divide the quota by 12
+    if subscription_interval = 'year' then
+      max_messages_quota := max_messages_quota / 12;
+    end if;
+
+    return max_messages_quota > messages_sent;
+end; $$
+language plpgsql;
 
 create policy "Users can read Chatbots in their Organization"
   on chatbots
@@ -146,12 +244,12 @@ create policy "Users can read Chatbots in their Organization"
     current_user_is_member_of_organization(organization_id)
   );
 
-create policy "Users can insert Chatbots in their Organization"
+create policy "Users can insert Chatbots in their Organization if they have enough quota"
   on chatbots
   for insert
   to authenticated
   with check (
-    current_user_is_member_of_organization(organization_id)
+    current_user_is_member_of_organization(organization_id) and can_create_chatbot(organization_id)
 );
 
 create policy "Users can update Chatbots in their Organization"
@@ -169,14 +267,6 @@ create policy "Users can select jobs in their Organization"
   for select
   to authenticated
   using (
-    current_user_is_member_of_organization(organization_id)
-  );
-
-create policy "Users can insert jobs in their Organization"
-  on jobs
-  for insert
-  to authenticated
-  with check (
     current_user_is_member_of_organization(organization_id)
   );
 
@@ -205,3 +295,8 @@ create policy "Users can delete documents in their Organization"
   using (
     current_user_is_member_of_organization((metadata ->> 'organization_id')::int)
   );
+
+create policy "Users can read plans"
+  on plans
+  for select
+  to authenticated;

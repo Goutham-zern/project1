@@ -17,3 +17,4 @@ export const CHATBOT_MESSAGES_TABLE = `messages`;
 export const CONVERSATIONS_TABLE = `conversations`;
 export const DOCUMENTS_TABLE = `documents`;
 export const JOBS_TABLE = `jobs`;
+export const TOKENS_QUOTA_TABLE = `tokens_quota`;

@@ -39,12 +39,7 @@ export default function Home() {
               <span>
                 The Chatbot Assistant for
               </span>
-              <span
-                className={
-                  'bg-gradient-to-br bg-clip-text text-transparent' +
-                  ' from-primary-400 to-primary-700 leading-[1.2]'
-                }
-              >
+              <span>
                 for seamless customer support
               </span>
             </HeroTitle>
@@ -83,7 +78,7 @@ export default function Home() {
             priority
             className={
               'shadow-[0_0_1000px_0] rounded-2xl' +
-              ' shadow-primary/40 animate-in fade-in' +
+              ' shadow-slate-700/50 animate-in fade-in' +
               ' zoom-in-50 delay-300 duration-1000 ease-out fill-mode-both'
             }
             width={2688}
@@ -375,12 +370,6 @@ function RightFeatureContainer(props: React.PropsWithChildren) {
 function MainCallToActionButton() {
   return (
     <Button
-      className={
-        'bg-transparent bg-gradient-to-r shadow-2xl' +
-        ' hover:shadow-primary/60 from-primary' +
-        ' to-primary-600 hover:to-indigo-600 text-white'
-      }
-      variant={'custom'}
       size={'lg'}
       round
       href={'/auth/sign-up'}

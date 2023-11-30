@@ -6,6 +6,7 @@ import Crawler from '~/core/crawler';
 import parallelizeBatch from '~/core/generic/parallelize-batch';
 import getLogger from '~/core/logger';
 import { insertJob } from '~/lib/jobs/mutations';
+import { Database } from '~/database.types';
 
 type TaskParams = {
   chatbotId: number;
@@ -22,7 +23,7 @@ export default class ChatbotTaskQueue {
   private static DELAY_BETWEEN_TASKS_S = 25;
 
   async createJob(
-    client: SupabaseClient,
+    client: SupabaseClient<Database>,
     params: {
       chatbotId: number;
       filters: {
@@ -45,6 +46,18 @@ export default class ChatbotTaskQueue {
     const { sites } = await crawler.getSitemapLinks(chatbot.url);
     const links = crawler.filterLinks(sites, params.filters);
 
+    // verify if organization is over quota before creating job
+    const canCreateJob = await client.rpc('can_index_documents', {
+      org_id: chatbot.organizationId,
+      requested_documents: links.length,
+    });
+
+    // if organization is over quota, throw error
+    if (!canCreateJob.data) {
+      return Promise.reject(`Can't create job. Organization is over quota.`);
+    }
+
+    // if organization is not over quota, create job
     const totalJobs = Math.ceil(
       links.length / ChatbotTaskQueue.MAX_LINKS_PER_JOB,
     );

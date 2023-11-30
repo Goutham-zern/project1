@@ -7,6 +7,7 @@ import { z } from 'zod';
 import generateReplyFromChain from './langchain';
 import configuration from '~/configuration';
 import getSupabaseRouteHandlerClient from '~/core/supabase/route-handler-client';
+import getVectorStore from '~/lib/server/chatbot/vector-store';
 
 const CHATBOT_TURNSTILE_SECRET_KEY = process.env.CHATBOT_TURNSTILE_SECRET_KEY;
 
@@ -27,8 +28,7 @@ if (process.env.NODE_ENV === 'production') {
  *
  * export const POST = handleChatBotRequest;
  *
- * @param {NextApiRequest} req - The request object received from Next.js.
- */
+ * */
 export async function handleChatBotRequest(req: NextRequest) {
   if (req.method === 'OPTIONS') {
     return new Response(null, {
@@ -82,9 +82,21 @@ export async function handleChatBotRequest(req: NextRequest) {
     admin: true,
   });
 
+  const canGenerateAIResponse = await client.rpc('can_respond_to_message', {
+    chatbot_id: chatbotId,
+  });
+
   const filter = {
-    chatbot_id: Number(chatbotId),
+    chatbot_id: chatbotId
   };
+
+  // if the Organization can't generate an AI response, we use a normal search
+  if (!canGenerateAIResponse.data) {
+    const latestMessage = messages[messages.length - 1];
+
+    // in this case, use a normal search function
+    return searchDocuments({ client, query: latestMessage.content, filter});
+  }
 
   const stream = await generateReplyFromChain( { client, messages, filter });
 
@@ -117,6 +129,23 @@ async function validateCaptchaToken(token: string) {
   }
 
   throw new Error('Invalid captcha token');
+}
+
+async function searchDocuments(params: {
+  client: ReturnType<typeof getSupabaseRouteHandlerClient>;
+  query: string;
+  filter: NumberObject;
+}) {
+  const store = await getVectorStore(params.client);
+  const maxResults = 3;
+
+  const documents = await store.similaritySearch(params.query, maxResults,{
+    filter: params.filter,
+  });
+
+  const content = documents.map((document) => document.pageContent).join('---');
+
+  return `I found these documents that might help you: ${content}`;
 }
 
 /**
