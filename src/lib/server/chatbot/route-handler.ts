@@ -3,11 +3,14 @@ import { headers } from 'next/headers';
 import isBot from 'isbot';
 import { StreamingTextResponse } from 'ai';
 import { z } from 'zod';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 import generateReplyFromChain from './langchain';
 import configuration from '~/configuration';
 import getSupabaseRouteHandlerClient from '~/core/supabase/route-handler-client';
 import getVectorStore from '~/lib/server/chatbot/vector-store';
+import { Database } from '~/database.types';
+import { CHATBOTS_TABLE } from '~/lib/db-tables';
 
 const CHATBOT_TURNSTILE_SECRET_KEY = process.env.CHATBOT_TURNSTILE_SECRET_KEY;
 
@@ -76,7 +79,6 @@ export async function handleChatBotRequest(req: NextRequest) {
   });
 
   const chatbotId = z.coerce.number().parse(req.headers.get('x-chatbot-id'));
-
   const { messages } = zodSchema.parse(await req.json());
 
   // if the user is using the fake data streamer, we return a fake response
@@ -89,11 +91,11 @@ export async function handleChatBotRequest(req: NextRequest) {
   });
 
   const canGenerateAIResponse = await client.rpc('can_respond_to_message', {
-    chatbot_id: chatbotId,
+    chatbot: chatbotId,
   });
 
   const filter = {
-    chatbot_id: chatbotId
+    chatbot_id: chatbotId,
   };
 
   // if the Organization can't generate an AI response, we use a normal search
@@ -101,10 +103,17 @@ export async function handleChatBotRequest(req: NextRequest) {
     const latestMessage = messages[messages.length - 1];
 
     // in this case, use a normal search function
-    return searchDocuments({ client, query: latestMessage.content, filter});
+    return searchDocuments({ client, query: latestMessage.content, filter });
   }
 
-  const stream = await generateReplyFromChain( { client, messages, filter });
+  const siteName = await getChatbotSiteName(client, chatbotId);
+
+  const stream = await generateReplyFromChain({
+    client,
+    messages,
+    filter,
+    siteName,
+  });
 
   return new StreamingTextResponse(stream);
 }
@@ -145,7 +154,7 @@ async function searchDocuments(params: {
   const store = await getVectorStore(params.client);
   const maxResults = 3;
 
-  const documents = await store.similaritySearch(params.query, maxResults,{
+  const documents = await store.similaritySearch(params.query, maxResults, {
     filter: params.filter,
   });
 
@@ -153,7 +162,9 @@ async function searchDocuments(params: {
 
   const stream = new ReadableStream({
     start(controller) {
-      controller.enqueue(`I found these documents that might help you:\n${content}`);
+      controller.enqueue(
+        `I found these documents that might help you:\n${content}`,
+      );
       controller.close();
     },
   });
@@ -191,4 +202,25 @@ function fakeDataStreamer() {
   });
 
   return new Response(stream);
+}
+
+async function getChatbotSiteName(
+  client: SupabaseClient<Database>,
+  chatbotId: number,
+) {
+  const response = await client
+    .from(CHATBOTS_TABLE)
+    .select(
+      `
+    site_name
+  `,
+    )
+    .eq('id', chatbotId)
+    .single();
+
+  if (response.error) {
+    throw response.error;
+  }
+
+  return response.data.site_name;
 }

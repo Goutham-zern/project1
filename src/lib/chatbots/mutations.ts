@@ -10,6 +10,7 @@ export function insertChatbot(
   chatbot: {
     name: string;
     url: string;
+    siteName: string;
     description?: string;
     organizationId: number;
   },
@@ -19,6 +20,7 @@ export function insertChatbot(
     url: chatbot.url,
     description: chatbot.description,
     organization_id: chatbot.organizationId,
+    site_name: chatbot.siteName,
   });
 }
 

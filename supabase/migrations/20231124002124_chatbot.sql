@@ -23,6 +23,7 @@ create table chatbots (
   name text not null,
   description text,
   url text not null,
+  site_name text not null,
   settings jsonb default '{
     "title": "AI Assistant",
     "branding": {
@@ -178,10 +179,10 @@ returns table (
   period_starts_at timestamptz,
   period_ends_at timestamptz,
   price_id text,
-  subscription_interval text
+  "interval" text
 ) as $$
 begin
-    return query select subscriptions.period_starts_at, subscriptions.period_ends_at, subscriptions.price_id, subscriptions.interval from subscriptions
+    return query select subscriptions.period_starts_at, subscriptions.period_ends_at, subscriptions.price_id, subscriptions."interval" from public.subscriptions
     join organizations_subscriptions on subscriptions.id = organizations_subscriptions.subscription_id
     where organizations_subscriptions.organization_id = org_id;
 end;
@@ -211,7 +212,7 @@ begin
 end; $$
 language plpgsql;
 
-create or replace function can_respond_to_message(chatbot_id bigint)
+create or replace function can_respond_to_message(chatbot bigint)
 returns bool as $$
 declare
     period_start timestamptz;
@@ -222,7 +223,7 @@ declare
     max_messages_quota bigint;
     org_id bigint;
 begin
-    select organization_id into org_id from chatbots where id = chatbot_id;
+    select organization_id into org_id from chatbots where chatbots.id = chatbot;
 
     -- select the subscription period
     select period_starts_at, period_ends_at, price_id, interval
@@ -233,7 +234,7 @@ begin
     -- and the quota is 200 messages per month
     if stripe_price_id is null then
         select count (*) from messages
-        where chatbot_id = messages.chatbot_id
+        where chatbot = messages.chatbot_id
         and messages.type = 'ai'
         and created_at >= date_trunc('month', current_date - interval '1 month')
         and created_at < date_trunc('month', current_date)
@@ -247,7 +248,7 @@ begin
 
     -- select the number of messages sent in the current period
     select count (*) from messages
-    where chatbot_id = messages.chatbot_id
+    where chatbot = messages.chatbot_id
     and messages.type = 'ai'
     and now() between period_start
     and period_end

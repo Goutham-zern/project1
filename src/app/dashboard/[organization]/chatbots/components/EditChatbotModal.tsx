@@ -13,6 +13,7 @@ function EditChatbotModal(
   props: React.PropsWithChildren<{
     chatbot: {
       name: string;
+      siteName: string;
       description?: string | null;
       id: number;
       url: string;
@@ -33,6 +34,11 @@ function EditChatbotModal(
           <TextFieldLabel>
             Website URL
             <TextFieldInput name={'url'} defaultValue={props.chatbot.url} required type={'url'} />
+          </TextFieldLabel>
+
+          <TextFieldLabel>
+            Chatbot Website Name
+            <TextFieldInput name={'site_name'} defaultValue={props.chatbot.siteName} required />
           </TextFieldLabel>
 
           <TextFieldLabel>
@@ -59,6 +65,7 @@ async function updateChatbotAction(data: FormData) {
       name: z.string(),
       description: z.string().nullish().default(''),
       url: z.string().url(),
+      site_name: z.string().min(1),
       id: z.coerce.number(),
     })
     .parse(Object.fromEntries(data.entries()));

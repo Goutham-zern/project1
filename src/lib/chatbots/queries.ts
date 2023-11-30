@@ -29,6 +29,7 @@ export async function getChatbot(
       id,
       name,
       description,
+      siteName: site_name,
       organizationId: organization_id,
       url,
       createdAt: created_at,

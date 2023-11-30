@@ -4,6 +4,7 @@ import useQuery from 'swr';
 import useMutation from 'swr/mutation';
 import { Control, useFieldArray, useForm } from 'react-hook-form';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { toast } from 'sonner';
 
 import Button from '~/core/ui/Button';
 import Label from '~/core/ui/Label';
@@ -21,8 +22,6 @@ import useSupabase from '~/core/hooks/use-supabase';
 import useCurrentOrganization from '~/lib/organizations/hooks/use-current-organization';
 import SideDialog from '~/core/ui/SideDialog';
 import { DialogTitle } from '~/core/ui/Dialog';
-import { usePathname, useRouter } from 'next/navigation';
-import { toast } from 'sonner';
 
 const initialFormValues = {
   currentStep: 0,
@@ -132,7 +131,7 @@ function ConfirmWebsiteStep(
     <div className={'flex flex-col space-y-4 text-sm animate-in fade-in'}>
       <div className={'flex flex-col space-y-2'}>
         <p>
-          Let's crawl your website to train your chatbot with your existing
+          Let&apos;s crawl your website to train your chatbot with your existing
           content. We will analyze your website and create a list of questions
           and answers for your chatbot.
         </p>
@@ -153,28 +152,6 @@ function ConfirmWebsiteStep(
       <div>
         <Button type={'button'} block onClick={props.onNext}>
           Analyze
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function ConfirmCrawlingStep(
-  props: React.PropsWithChildren<{
-    chatbotId: number;
-  }>,
-) {
-  return (
-    <div className={'flex flex-col space-y-4 text-sm animate-in fade-in'}>
-      <Alert type={'success'}>
-        <Alert.Heading>Crawling Started</Alert.Heading>
-        We are crawling your website. This will take a few minutes. We will
-        notify you when it's done.
-      </Alert>
-
-      <div>
-        <Button block href={`../${props.chatbotId}/training`}>
-          <span>Check Status</span>
         </Button>
       </div>
     </div>

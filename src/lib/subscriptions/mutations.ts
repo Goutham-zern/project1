@@ -67,7 +67,6 @@ function subscriptionMapper(
 
   const row: Partial<SubscriptionRow> = {
     price_id: priceId,
-    product_id: price.product as string,
     currency: subscription.currency,
     status: subscription.status ?? 'incomplete',
     interval,

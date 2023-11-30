@@ -14,7 +14,7 @@ import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { Database } from '~/database.types';
 import { SupabaseClient } from '@supabase/supabase-js';
 
-const OPENAI_MODEL = 'gpt-3.5-turbo';
+const OPENAI_MODEL = 'gpt-3.5-turbo-16k';
 const DEBUG = !configuration.production;
 
 /**
@@ -33,18 +33,18 @@ export default async function generateReplyFromChain(params: {
     content: string;
   }>;
   filter?: UnknownObject
+  siteName: string;
 }) {
   const model = new OpenAI({
     temperature: 0,
     modelName: OPENAI_MODEL,
     callbacks: DEBUG ? [new ConsoleCallbackHandler()] : [],
-    openAIApiKey: process.env.OPENAI_API_KEY,
   });
 
   const chain = await crateChain({
     client: params.client,
     model,
-    questionPrompt: getPromptTemplate(),
+    questionPrompt: getPromptTemplate(params.siteName),
     filter: params.filter
   });
 
@@ -69,15 +69,7 @@ export default async function generateReplyFromChain(params: {
   });
 }
 
-function getPromptTemplate() {
-  const siteName = configuration.site.siteName;
-
-  if (!siteName && !configuration.production) {
-    console.warn(
-      `The site name is not set. Please set the site name in the configuration file.`,
-    );
-  }
-
+function getPromptTemplate(siteName: string) {
   return PromptTemplate.fromTemplate(
     `You are a helpful and polite customer support assistant working for ${siteName}. You will reply on behalf of ${siteName} and customers will refer to you as ${siteName}.
     Use only CHAT HISTORY and the CONTEXT to answer in a helpful manner to the question. Do not make up answers, emails, links, not in CONTEXT. If you don't know the answer - reply "Sorry, I don\'t know how to help with that.".
@@ -97,7 +89,7 @@ async function getVectorStoreRetriever(
   client: SupabaseClient<Database>,
   filter?: UnknownObject,
 ) {
-  const maxDocuments = Number(process.env.CHATBOT_MAX_DOCUMENTS ?? 3);
+  const maxDocuments = Number(process.env.CHATBOT_MAX_DOCUMENTS ?? 2);
 
   const similarityThreshold = Number(
     process.env.CHATBOT_SIMILARITY_THRESHOLD ?? 0.8,

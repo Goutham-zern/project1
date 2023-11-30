@@ -3,6 +3,7 @@ import { createContext, useEffect } from 'react';
 import useChatBotState, {
   ChatBotActionTypes,
 } from './lib/chatbot-state.reducer';
+
 import { ChatbotSettings } from '~/components/chatbot/lib/types';
 
 interface ChatBotContextState {
@@ -59,7 +60,7 @@ function ChatBotContextProvider(
       type: ChatBotActionTypes.SET_SETTINGS,
       payload: props.state.settings || initialState.settings,
     });
-  }, [props.state.settings]);
+  }, [props.state.settings, dispatch]);
 
   return (
     <ChatBotContext.Provider value={{ state, onOpenChange, onLoadingChange, }}>

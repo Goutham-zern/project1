@@ -18,6 +18,8 @@ import {
 } from '~/lib/chatbots/mutations';
 
 import { ChatbotSettings } from '~/components/chatbot/lib/types';
+import { parseOrganizationIdCookie } from '~/lib/server/cookies/organization.cookie';
+import requireSession from '~/lib/user/require-session';
 
 interface SitemapFilters {
   allow: string[];
@@ -63,15 +65,17 @@ export const createChatbotCrawlingJob = withSession(
   }) => {
     const taskQueue = new ChatbotTaskQueue();
     const client = getSupabaseServerActionClient();
+    const { user } = await requireSession(client);
 
     const chatbot = await taskQueue.createJob(client, params);
+    const orgUid = await parseOrganizationIdCookie(user.id);
 
     revalidatePath(
       `/dashboard/[organization]/chatbots/[chatbot]/training`,
       `page`,
     );
 
-    return redirect(`/dashboard/${chatbot.organizationId}/chatbots/${chatbot.id}/training`);
+    return redirect(`/dashboard/${orgUid}/chatbots/${chatbot.id}/training`);
   },
 );
 

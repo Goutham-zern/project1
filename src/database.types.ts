@@ -42,6 +42,7 @@ export interface Database {
           name: string
           organization_id: number
           settings: Json
+          site_name: string
           url: string
         }
         Insert: {
@@ -51,6 +52,7 @@ export interface Database {
           name: string
           organization_id: number
           settings?: Json
+          site_name?: string
           url: string
         }
         Update: {
@@ -60,6 +62,7 @@ export interface Database {
           name?: string
           organization_id?: number
           settings?: Json
+          site_name?: string
           url?: string
         }
         Relationships: [
@@ -220,27 +223,39 @@ export interface Database {
       }
       messages: {
         Row: {
+          chatbot_id: number
           conversation_id: number
           created_at: string
           id: number
-          sender: string
+          sender: Database["public"]["Enums"]["sender"]
           text: string
+          type: Database["public"]["Enums"]["message_type"]
         }
         Insert: {
+          chatbot_id: number
           conversation_id: number
           created_at?: string
           id?: number
-          sender: string
+          sender: Database["public"]["Enums"]["sender"]
           text: string
+          type: Database["public"]["Enums"]["message_type"]
         }
         Update: {
+          chatbot_id?: number
           conversation_id?: number
           created_at?: string
           id?: number
-          sender?: string
+          sender?: Database["public"]["Enums"]["sender"]
           text?: string
+          type?: Database["public"]["Enums"]["message_type"]
         }
         Relationships: [
+          {
+            foreignKeyName: "messages_chatbot_id_fkey"
+            columns: ["chatbot_id"]
+            referencedRelation: "chatbots"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "messages_conversation_id_fkey"
             columns: ["conversation_id"]
@@ -471,7 +486,7 @@ export interface Database {
       }
       can_respond_to_message: {
         Args: {
-          chatbot_id: number
+          chatbot: number
         }
         Returns: boolean
       }
@@ -496,6 +511,17 @@ export interface Database {
         }
         Returns: boolean
       }
+      get_active_subscription: {
+        Args: {
+          org_id: number
+        }
+        Returns: {
+          period_starts_at: string
+          period_ends_at: string
+          price_id: string
+          interval: string
+        }[]
+      }
       get_organizations_for_authenticated_user: {
         Args: Record<PropertyKey, never>
         Returns: number[]
@@ -511,12 +537,6 @@ export interface Database {
           membership_id: number
         }
         Returns: number
-      }
-      get_subscription_price_id: {
-        Args: {
-          org_id: number
-        }
-        Returns: string
       }
       kw_match_documents: {
         Args: {
@@ -553,6 +573,8 @@ export interface Database {
     }
     Enums: {
       jobs_status: "pending" | "running" | "completed" | "failed"
+      message_type: "ai" | "db" | "user"
+      sender: "user" | "assistant"
       subscription_status:
         | "active"
         | "trialing"

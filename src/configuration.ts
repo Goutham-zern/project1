@@ -10,7 +10,7 @@ enum Themes {
 
 const configuration = {
   site: {
-    name: 'Awesomely - Your SaaS Title',
+    name: 'Makerchat - A SaaS Template for Next.js',
     description: 'Your SaaS Description',
     themeColor: '#ffffff',
     themeColorDark: '#0a0a0a',

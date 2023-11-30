@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
 import Modal from '~/core/ui/Modal';
-import { TextFieldInput, TextFieldLabel } from '~/core/ui/TextField';
+import { TextFieldHint, TextFieldInput, TextFieldLabel } from '~/core/ui/TextField';
 
 import getSupabaseServerActionClient from '~/core/supabase/action-client';
 import getSdk from '~/lib/sdk';
@@ -55,6 +55,19 @@ function CreateChatbotForm() {
         </TextFieldLabel>
 
         <TextFieldLabel>
+          Chatbot Website Name
+          <TextFieldInput
+            name={'siteName'}
+            required
+            placeholder={'Ex. Supabase'}
+          />
+
+          <TextFieldHint>
+            This is the name of your website you want the Chatbot to chat on behalf of. Ex. Supabase
+          </TextFieldHint>
+        </TextFieldLabel>
+
+        <TextFieldLabel>
           Website URL
           <TextFieldInput name={'url'} placeholder={'https://...'} type={'url'} defaultValue={'https://'} />
         </TextFieldLabel>
@@ -96,6 +109,7 @@ async function createChatbotAction(data: FormData) {
   const name = z.string().min(2).parse(data.get('name'));
   const description = z.string().optional().parse(data.get('description'));
   const url = z.string().parse(data.get('url'));
+  const siteName = z.string().parse(data.get('siteName'));
 
   const client = getSupabaseServerActionClient();
   const sdk = getSdk(client);
@@ -110,6 +124,7 @@ async function createChatbotAction(data: FormData) {
     name,
     description,
     url,
+    siteName,
     organizationId: organization.id,
   })
     .select('id')

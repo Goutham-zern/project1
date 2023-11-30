@@ -69,7 +69,7 @@ function ChatBotContainer(
     scrollToBottom({ smooth: true });
     setError(undefined);
     chatbotMessagesStore.saveMessages(messages, props.storageKey);
-  }, [messages, scrollToBottom]);
+  }, [messages, scrollToBottom, props.storageKey]);
 
   return (
     <>
@@ -296,7 +296,7 @@ function ChatBotInput({
 
       handleSubmit(e);
     },
-    [handleSubmit, siteKey],
+    [handleSubmit, disabled, isLoading, onLoadingChange],
   );
 
   return (
