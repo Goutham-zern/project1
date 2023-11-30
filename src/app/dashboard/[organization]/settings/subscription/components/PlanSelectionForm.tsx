@@ -43,6 +43,16 @@ const PlanSelectionForm: React.FCC<{
         </If>
 
         <div className={'flex w-full flex-col space-y-8 justify-center'}>
+          <div className={'text-sm p-2'}>
+            <p>
+              You are currently on the <b>free plan</b>. You can send 200 AI-generated messages per month and upload up to 50
+              documents.
+            </p>
+            <p>
+              Once you want to get serious, you can upgrade to a paid plan below.
+            </p>
+          </div>
+          
           <PricingTable
             CheckoutButton={(props) => {
               return (

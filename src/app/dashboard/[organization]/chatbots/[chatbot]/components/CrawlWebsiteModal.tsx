@@ -3,9 +3,8 @@
 import useQuery from 'swr';
 import useMutation from 'swr/mutation';
 import { Control, useFieldArray, useForm } from 'react-hook-form';
-import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 
-import Modal from '~/core/ui/Modal';
 import Button from '~/core/ui/Button';
 import Label from '~/core/ui/Label';
 import Stepper from '~/core/ui/Stepper';
@@ -18,6 +17,12 @@ import IconButton from '~/core/ui/IconButton';
 import TextField from '~/core/ui/TextField';
 
 import { createChatbotCrawlingJob, getSitemapLinks } from '../actions.server';
+import useSupabase from '~/core/hooks/use-supabase';
+import useCurrentOrganization from '~/lib/organizations/hooks/use-current-organization';
+import SideDialog from '~/core/ui/SideDialog';
+import { DialogTitle } from '~/core/ui/Dialog';
+import { usePathname, useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 const initialFormValues = {
   currentStep: 0,
@@ -34,9 +39,11 @@ function CrawlWebsiteModal(
   }>,
 ) {
   return (
-    <Modal Trigger={props.children} heading={'Crawl Website'}>
+    <SideDialog Trigger={props.children}>
+      <DialogTitle className={'mb-4'}>Crawl Website</DialogTitle>
+
       <ModalForm url={props.url} chatbotId={props.chatbotId} />
-    </Modal>
+    </SideDialog>
   );
 }
 
@@ -53,7 +60,7 @@ function ModalForm(
     mode: 'onChange',
   });
 
-  const steps = ['Website', 'Analyze', 'Confirm'];
+  const steps = ['Website', 'Analyze', 'Finish'];
   const crawlingJobMutation = useStartCrawlingJob();
 
   const currentStep = form.watch('currentStep');
@@ -66,7 +73,7 @@ function ModalForm(
     return {
       allow,
       disallow,
-    }
+    };
   };
 
   const isStep = (step: number) => currentStep === step;
@@ -76,12 +83,16 @@ function ModalForm(
   };
 
   const onStartCrawling = async () => {
-    await crawlingJobMutation.trigger({
+    const promise = crawlingJobMutation.trigger({
       chatbotId: props.chatbotId,
-      filters: getFilters()
+      filters: getFilters(),
     });
 
-    setStep(2);
+    toast.promise(promise, {
+      success: 'Crawling started',
+      loading: 'Starting crawling...',
+      error: 'Failed to start crawling',
+    });
   };
 
   return (
@@ -105,10 +116,6 @@ function ModalForm(
           onNext={onStartCrawling}
           onBack={() => setStep(0)}
         />
-      </If>
-
-      <If condition={isStep(2)}>
-        <ConfirmCrawlingStep chatbotId={props.chatbotId} />
       </If>
     </div>
   );
@@ -190,7 +197,17 @@ function AnalyzeWebsiteSitemapStep(
   const { isLoading, data, error } = useSitemapLinks(
     props.chatbotId,
     props.url,
-    props.filters
+    props.filters,
+  );
+
+  const organizationId = useCurrentOrganization()?.id;
+
+  const totalNumberOfPages = data?.numberOfPages || 0;
+  const numberOfFilteredPages = data?.numberOfFilteredPages || 0;
+
+  const canCreateCrawlingJobQuery = useCanCreateCrawlingJob(
+    organizationId,
+    numberOfFilteredPages,
   );
 
   if (props.isCreatingJob) {
@@ -233,9 +250,6 @@ function AnalyzeWebsiteSitemapStep(
     );
   }
 
-  const totalNumberOfPages = data?.numberOfPages || 0;
-  const numberOfFilteredPages = data?.numberOfFilteredPages || 0;
-
   return (
     <div className={'flex flex-col space-y-4 text-sm animate-in fade-in'}>
       <div className={'flex flex-col space-y-2'}>
@@ -244,25 +258,38 @@ function AnalyzeWebsiteSitemapStep(
         </p>
 
         <p>
-          The sitemap contains a total of <strong>{totalNumberOfPages}</strong> pages. We found <strong>{numberOfFilteredPages}</strong> after applying the filters.
-          Do you want to start crawling?
+          The sitemap contains a total of <strong>{totalNumberOfPages}</strong>{' '}
+          pages. We found <strong>{numberOfFilteredPages}</strong> after
+          applying the filters. Do you want to start crawling?
         </p>
 
         <p>This will take a few minutes. We will notify you when it's done.</p>
       </div>
 
-      <div>
-        <If condition={numberOfFilteredPages > 0}>
-          <Button type={'button'} block onClick={props.onNext}>
-            Yes, Start Crawling
-          </Button>
-        </If>
-      </div>
+      <div className={'flex flex-col space-y-2'}>
+        <div>
+          <If condition={numberOfFilteredPages > 0}>
+            <If
+              condition={canCreateCrawlingJobQuery.data}
+              fallback={<WarnCannotCreateJobAlert />}
+            >
+              <Button type={'button'} block onClick={props.onNext}>
+                Yes, Start Crawling
+              </Button>
+            </If>
+          </If>
+        </div>
 
-      <div>
-        <Button variant={'outline'} type={'button'} block onClick={props.onBack}>
-          No, Go Back
-        </Button>
+        <div>
+          <Button
+            variant={'outline'}
+            type={'button'}
+            block
+            onClick={props.onBack}
+          >
+            Go Back
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -324,10 +351,9 @@ function CrawlingFiltersForm(
               type={'button'}
               onClick={() => allowList.append({ value: '' })}
               size={'sm'}
-              variant={'outline'}
+              variant={'ghost'}
             >
-              <PlusIcon className={'h-3 mr-2'} />
-              <span>Add URL</span>
+              <span>Add inclusion pattern</span>
             </Button>
           </div>
         </div>
@@ -371,10 +397,9 @@ function CrawlingFiltersForm(
               type={'button'}
               onClick={() => disallowList.append({ value: '' })}
               size={'sm'}
-              variant={'outline'}
+              variant={'ghost'}
             >
-              <PlusIcon className={'h-3 mr-2'} />
-              <span>Add URL</span>
+              <span>Add exclusion pattern</span>
             </Button>
           </div>
         </div>
@@ -383,15 +408,49 @@ function CrawlingFiltersForm(
   );
 }
 
+function WarnCannotCreateJobAlert() {
+  return (
+    <Alert type={'warn'}>
+      <Alert.Heading>Upgrade Plan</Alert.Heading>
+      You have reached the limit of documents you can index. Please upgrade your
+      plan to index more documents.
+    </Alert>
+  );
+}
+
+function useCanCreateCrawlingJob(
+  organizationId: number | undefined,
+  requestedDocuments: number,
+) {
+  const supabase = useSupabase();
+
+  return useQuery(['can-create-crawling-job', organizationId], async () => {
+    if (!organizationId) {
+      return false;
+    }
+
+    const { data, error } = await supabase.rpc('can_index_documents', {
+      requested_documents: requestedDocuments,
+      org_id: organizationId,
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data;
+  });
+}
+
 function useStartCrawlingJob() {
   const csrfToken = useCsrfToken();
 
   type Params = {
     chatbotId: number;
-    filters:{
+    filters: {
       allow: string[];
       disallow: string[];
-    }
+    };
   };
 
   return useMutation(['start-crawling-job'], (_, { arg }: { arg: Params }) => {
@@ -399,10 +458,14 @@ function useStartCrawlingJob() {
   });
 }
 
-function useSitemapLinks(chatbotId: number, url: string, filters: {
-  allow: string[];
-  disallow: string[];
-}) {
+function useSitemapLinks(
+  chatbotId: number,
+  url: string,
+  filters: {
+    allow: string[];
+    disallow: string[];
+  },
+) {
   const csrfToken = useCsrfToken();
   const key = ['sitemap-links', chatbotId, url, JSON.stringify(filters)];
 

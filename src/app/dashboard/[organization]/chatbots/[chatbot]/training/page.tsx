@@ -37,12 +37,12 @@ async function ChatbotTrainingPage({
   }
 
   return (
-    <PageBody className={'py-container space-y-2'}>
+    <PageBody className={'py-container space-y-4'}>
       <div className={'flex space-x-4 justify-between items-end'}>
         <div className={'flex flex-col space-y-2'}>
           <Heading type={4}>Training</Heading>
 
-          <p className={'text-sm'}>
+          <p className={'text-sm text-gray-500 dark:text-gray-400'}>
             Train your chatbot with new documents or see the status of previous
             training jobs.
           </p>

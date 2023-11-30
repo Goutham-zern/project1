@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { redirect } from 'next/navigation';
 
 import getSupabaseServerActionClient from '~/core/supabase/action-client';
 import getLogger from '~/core/logger';
@@ -63,16 +64,14 @@ export const createChatbotCrawlingJob = withSession(
     const taskQueue = new ChatbotTaskQueue();
     const client = getSupabaseServerActionClient();
 
-    await taskQueue.createJob(client, params);
+    const chatbot = await taskQueue.createJob(client, params);
 
     revalidatePath(
       `/dashboard/[organization]/chatbots/[chatbot]/training`,
       `page`,
     );
 
-    return {
-      success: true,
-    };
+    return redirect(`/dashboard/${chatbot.organizationId}/chatbots/${chatbot.id}/training`);
   },
 );
 

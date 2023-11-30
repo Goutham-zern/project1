@@ -31,7 +31,7 @@ async function loadDocuments(
   page: number = 1,
   query: string = '',
 ) {
-  const perPage = 50;
+  const perPage = 10;
   const from = (page - 1) * perPage;
   const to = page * perPage;
 
@@ -53,12 +53,13 @@ async function loadDocuments(
   };
 }
 
-async function ChatbotPage({ params }: ChatbotPageParams) {
+async function ChatbotPage({ params, searchParams }: ChatbotPageParams) {
   const client = getSupabaseServerComponentClient();
   const chatbotId = +params.chatbot;
+  const page = searchParams.page ? +searchParams.page : 1;
 
   const [props, chatbot] = await Promise.all([
-    loadDocuments(client, chatbotId),
+    loadDocuments(client, chatbotId, page),
     getChatbot(client, chatbotId),
   ]);
 
@@ -67,14 +68,16 @@ async function ChatbotPage({ params }: ChatbotPageParams) {
   }
 
   return (
-    <PageBody className={'py-container space-y-2'}>
-      <Heading type={4}>
-        Documents
-      </Heading>
+    <PageBody className={'py-container space-y-4'}>
+      <div className={'flex flex-col space-y-2'}>
+        <Heading type={4}>
+          Documents
+        </Heading>
 
-      <p className={'text-sm'}>
-        These are the documents that your chatbot has learned from your website.
-      </p>
+        <p className={'text-sm text-gray-500 dark:text-gray-400'}>
+          These are the documents that your chatbot has learned from your website.
+        </p>
+      </div>
 
       <If
         condition={props.count}
@@ -105,7 +108,7 @@ function EmptyState(props: { id: number; url: string }) {
 
       <CrawlWebsiteModal chatbotId={props.id} url={props.url}>
         <Button size={'sm'} className={'text-sm text-center'}>
-         Train Chatbot with Website
+          Train Chatbot with Website
         </Button>
       </CrawlWebsiteModal>
     </div>

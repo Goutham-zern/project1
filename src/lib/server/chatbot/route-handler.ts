@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { headers } from 'next/headers';
-
+import isBot from 'isbot';
 import { StreamingTextResponse } from 'ai';
 import { z } from 'zod';
 
@@ -36,6 +36,12 @@ export async function handleChatBotRequest(req: NextRequest) {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST',
       },
+    });
+  }
+
+  if (isBot(req.headers.get('user-agent'))) {
+    return new Response(`No chatbot for you!`, {
+      status: 403,
     });
   }
 
@@ -145,7 +151,14 @@ async function searchDocuments(params: {
 
   const content = documents.map((document) => document.pageContent).join('---');
 
-  return `I found these documents that might help you: ${content}`;
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(`I found these documents that might help you:\n${content}`);
+      controller.close();
+    },
+  });
+
+  return new StreamingTextResponse(stream);
 }
 
 /**

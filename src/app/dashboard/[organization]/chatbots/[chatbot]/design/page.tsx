@@ -18,14 +18,16 @@ async function ChatbotDesignPage({ params }: ChatbotDesignPageParams) {
   const settings = chatbot.settings as unknown as ChatbotSettings;
 
   return (
-    <PageBody className={'py-container space-y-2'}>
-      <Heading type={4}>
-        Design
-      </Heading>
+    <PageBody className={'py-container space-y-4'}>
+      <div className={'flex flex-col space-y-2'}>
+        <Heading type={4}>
+          Design
+        </Heading>
 
-      <p className={'text-sm'}>
-        Make the Chatbot your own by customizing its appearance and behavior.
-      </p>
+        <p className={'text-sm text-gray-500 dark:text-gray-400'}>
+          Make the Chatbot your own by customizing its appearance and behavior.
+        </p>
+      </div>
 
       <DesignChatbotContainer settings={settings} chatbotId={params.chatbot} />
     </PageBody>

@@ -72,42 +72,48 @@ const configuration = {
     displayMode: StripeCheckoutDisplayMode.Popup,
     products: [
       {
-        name: 'Free',
-        description: 'A free plan to get started',
-        badge: `No credit card required`,
+        name: 'Basic',
+        description: 'A basic plan to get started',
+        badge: ``,
         features: [
-          'Up to 200 AI-generated messages',
-          'Up to 50 indexed documents',
+          'Up to 8,000 AI-generated messages',
+          'Up to 500 indexed documents',
           'Fallback to DB search if limit reached',
           'Email Support',
         ],
         plans: [
           {
             name: 'Monthly',
-            price: '$0',
+            price: '$9.99',
+            stripePriceId: 'basic-plan-mth',
+          },
+          {
+            name: 'Yearly',
+            price: '$99.99',
+            stripePriceId: 'basic-plan-mth',
           },
         ],
       },
       {
-        name: 'Starter',
+        name: 'Pro',
         badge: `Most Popular`,
         recommended: true,
         description: 'A plan for small scale projects',
         features: [
-          'Up to 10,000 AI-generated messages',
-          'Up to 1,000 indexed documents',
+          'Up to 20,000 AI-generated messages',
+          'Up to 2,000 indexed documents',
           'Fallback to DB search if limit reached',
           'Chat and Email Support',
         ],
         plans: [
           {
             name: 'Monthly',
-            price: '$19',
+            price: '$29.99',
             stripePriceId: 'pro-plan-mth',
           },
           {
             name: 'Yearly',
-            price: '199',
+            price: '$299.99',
             stripePriceId: 'pro-plan-yr',
           },
         ],
@@ -118,20 +124,20 @@ const configuration = {
         badge: ``,
         features: [
           'Unlimited replies',
-          'Up to 100,000 AI-generated messages',
-          'Up to 10,000 indexed documents',
+          'Up to 200,000 AI-generated messages',
+          'Up to 20,000 indexed documents',
           'Fallback to DB search if limit reached',
           'Priority Support',
         ],
         plans: [
           {
             name: 'Monthly',
-            price: '$39',
+            price: '$69.99',
             stripePriceId: 'scale-plan-mth',
           },
           {
             name: 'Yearly',
-            price: '$399',
+            price: '$699.99',
             stripePriceId: 'scale-plan-yr',
           },
         ],

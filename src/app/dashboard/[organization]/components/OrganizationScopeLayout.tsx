@@ -70,7 +70,7 @@ const OrganizationScopeLayout: React.FCC<{
                 whenSignedOut={'/'}
               >
                 <main>
-                  <Toaster />
+                  <Toaster richColors={false} />
 
                   <RouteShellWithSidebar
                     organization={organization?.uuid ?? ''}

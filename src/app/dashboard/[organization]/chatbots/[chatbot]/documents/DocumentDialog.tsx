@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import useQuery from 'swr';
-import { useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { EllipsisVerticalIcon } from '@heroicons/react/24/outline';
 
 import SideDialog from '~/core/ui/SideDialog';
@@ -26,16 +26,12 @@ import Alert from '~/core/ui/Alert';
 function DocumentDialog() {
   const params = useSearchParams();
   const value = params.get('document');
-
-  const [open, setOpen] = useState(!!value);
   const [docId, setDocId] = useState(value);
+  const router = useRouter();
+  const pathName = usePathname();
 
   useEffect(() => {
     setDocId(value);
-
-    if (value) {
-      setOpen(true);
-    }
   }, [value]);
 
   if (!docId) {
@@ -43,8 +39,14 @@ function DocumentDialog() {
   }
 
   return (
-    <SideDialog open={open} onOpenChange={setOpen}>
-      <DocumentContent document={docId} onBeforeDelete={() => setOpen(false)} />
+    <SideDialog open={!!value} onOpenChange={open => {
+      if (!open) {
+        setDocId(null);
+        // remove the query param from the url when the dialog is closed
+        router.replace(pathName);
+      }
+    }}>
+      <DocumentContent document={docId} onBeforeDelete={() => setDocId(null)} />
     </SideDialog>
   );
 }

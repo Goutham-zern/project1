@@ -7,6 +7,7 @@ import parallelizeBatch from '~/core/generic/parallelize-batch';
 import getLogger from '~/core/logger';
 import { insertJob } from '~/lib/jobs/mutations';
 import { Database } from '~/database.types';
+import getSupabaseServerActionClient from '~/core/supabase/action-client';
 
 type TaskParams = {
   chatbotId: number;
@@ -97,7 +98,11 @@ export default class ChatbotTaskQueue {
       `Fetched SiteMap links. Inserting job...`,
     );
 
-    const job = await insertJob(client, {
+    const adminClient = getSupabaseServerActionClient({
+      admin: true
+    });
+
+    const job = await insertJob(adminClient, {
       chatbotId: params.chatbotId,
       organizationId: chatbot.organizationId,
       totalTasks: links.length,
@@ -156,6 +161,7 @@ export default class ChatbotTaskQueue {
       concurrentBatches,
       delayBetweenTasks,
     );
+
     const jobsStarted = results.filter((result) => result.messageId);
 
     logger.info(
@@ -167,6 +173,8 @@ export default class ChatbotTaskQueue {
       },
       `Finalized job creation`,
     );
+
+    return chatbot;
   }
 
   async verify(request: Request) {

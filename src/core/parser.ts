@@ -1,4 +1,5 @@
-import { parse } from 'node-html-parser';
+import parse from 'node-html-parser';
+import HtmlCleaner from '~/core/html-cleaner';
 
 export default class Parser {
   async parse(html: string, host: string) {
@@ -34,22 +35,9 @@ export default class Parser {
   }
 
   private cleanHtml(content: string, host: string) {
-    const html = parse(content);
-    const links = html.querySelectorAll('a');
+    const cleaner = new HtmlCleaner(content, host);
 
-    links.forEach((link) => {
-      link.setAttribute('target', '_blank');
-      link.setAttribute('rel', 'noopener noreferrer');
-
-      const href = link.getAttribute('href');
-
-      // if the link is relative, make it absolute
-      if (href && href.startsWith('/')) {
-        link.setAttribute('href', `${host}${href}`);
-      }
-    });
-
-    return html.innerHTML;
+    return cleaner.clean();
   }
 
   private getTitle(content: string) {

@@ -18,13 +18,15 @@ async function ChatbotPublishPage({ params }: ChatbotPublishPageParams) {
 
   return (
     <PageBody className={'py-container space-y-4'}>
-      <Heading type={4}>Publish</Heading>
+      <div className={'flex flex-col space-y-2'}>
+        <Heading type={4}>Publish</Heading>
 
-      <div>
-        <p className={'text-sm'}>
-          Copy and paste the following code snippet into your website to embed
-          your chatbot.
-        </p>
+        <div>
+          <p className={'text-sm text-gray-500 dark:text-gray-400'}>
+            Copy and paste the following code snippet into your website to embed
+            your chatbot.
+          </p>
+        </div>
       </div>
 
       <pre className={'border text-sm text-gray-600 dark:text-gray-400 rounded-lg p-container'}>

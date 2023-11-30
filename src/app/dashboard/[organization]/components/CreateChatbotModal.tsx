@@ -119,5 +119,5 @@ async function createChatbotAction(data: FormData) {
     throw new Error(error.message);
   }
 
-  redirect(`/dashboard/${organization.uuid}/chatbots/${chatbot.id}`);
+  redirect(`/dashboard/${organization.uuid}/chatbots/${chatbot.id}/documents`);
 }

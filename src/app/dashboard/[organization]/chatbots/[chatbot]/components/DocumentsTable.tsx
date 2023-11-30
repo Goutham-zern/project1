@@ -2,22 +2,22 @@
 
 import { useMemo } from 'react';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { ColumnDef } from '@tanstack/react-table';
 import { EllipsisVerticalIcon } from '@heroicons/react/24/outline';
 
 import DataTable from '~/core/ui/DataTable';
 import type { getChatbotDocuments } from '~/lib/chatbots/queries';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '~/core/ui/Dropdown';
-import Modal from '~/core/ui/Modal';
-import Button from '~/core/ui/Button';
-import { deleteDocumentAction } from '~/app/dashboard/[organization]/chatbots/[chatbot]/actions.server';
-import DeleteDocumentModal from '~/app/dashboard/[organization]/chatbots/[chatbot]/components/DeleteDocumentModal';
+
+import DeleteDocumentModal from './DeleteDocumentModal';
 
 type Data = Awaited<ReturnType<typeof getChatbotDocuments>>;
 
@@ -37,8 +37,21 @@ interface DocMetadata {
 
 function DocumentsTable(props: DocumentTableProps) {
   const columns = useMemo(() => getColumns(), []);
+  const router = useRouter();
+  const pathname = usePathname();
 
-  return <DataTable data={props.data} columns={columns} />;
+  return (
+    <DataTable
+      pageIndex={props.page - 1}
+      pageSize={props.perPage}
+      pageCount={Math.ceil(props.count / props.perPage)}
+      data={props.data}
+      columns={columns}
+      onPaginationChange={(state) => {
+        router.push(`${pathname}?page=${state.pageIndex + 1}`);
+      }}
+    />
+  );
 }
 
 export default DocumentsTable;
