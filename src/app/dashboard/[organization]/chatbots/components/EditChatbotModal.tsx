@@ -66,7 +66,7 @@ async function updateChatbotAction(data: FormData) {
       description: z.string().nullish().default(''),
       url: z.string().url(),
       site_name: z.string().min(1),
-      id: z.coerce.number(),
+      id: z.string().uuid(),
     })
     .parse(Object.fromEntries(data.entries()));
   
