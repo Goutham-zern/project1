@@ -30,14 +30,19 @@ if (!NEXT_PUBLIC_CHATBOT_API_URL) {
   );
 }
 
+type ChatBotProps = React.PropsWithChildren<{
+  defaultPrompts?: string[];
+  storageKey?: string;
+  siteName: string;
+  chatbotId: string;
+  conversationId: string;
+
+  onClear?: () => void;
+  onMessage?: (message: string) => void;
+}>;
+
 function ChatBotContainer(
-  props: React.PropsWithChildren<{
-    defaultPrompts?: string[];
-    storageKey?: string;
-    siteName: string;
-    chatbotId: string;
-    conversationId: string;
-  }>,
+  props: ChatBotProps,
 ) {
   const { state, onOpenChange, onLoadingChange } = useContext(ChatBotContext);
   const scrollingDiv = useRef<HTMLDivElement>();
@@ -63,6 +68,11 @@ function ChatBotContainer(
     onResponse: () => {
       onLoadingChange(false);
     },
+    onFinish: (message) => {
+      if (props.onMessage) {
+        props.onMessage(message.content);
+      }
+    },
     headers: {
       'x-chatbot-id': props.chatbotId,
       'x-conversation-id': props.conversationId,
@@ -83,8 +93,12 @@ function ChatBotContainer(
             <ChatBotHeader
               onClose={() => onOpenChange(false)}
               onRefresh={() => {
-                chatbotMessagesStore.saveMessages([], props.storageKey);
+                chatbotMessagesStore.removeMessages(props.storageKey);
                 setMessages(chatbotMessagesStore.loadMessages(props.storageKey, props.siteName));
+
+                if (props.onClear) {
+                  props.onClear();
+                }
               }}
             />
 

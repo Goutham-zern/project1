@@ -40,6 +40,9 @@ const chatBotMessagesStore = {
   saveMessages(messages: Message[], key = LOCAL_STORAGE_KEY) {
     localStorage.setItem(key, JSON.stringify(messages));
   },
+  removeMessages(storageKey: string | undefined) {
+    localStorage.removeItem(storageKey ?? LOCAL_STORAGE_KEY);
+  }
 };
 
 export default chatBotMessagesStore;

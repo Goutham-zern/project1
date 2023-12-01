@@ -1,7 +1,19 @@
 import './chatbot.css';
 
 import { hydrateRoot } from 'react-dom/client';
-import { lazy, Suspense, useEffect, useState } from 'react';
+
+import {
+  createContext,
+  lazy,
+  Suspense,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
+
+import { nanoid } from 'ai';
+
 import { ChatbotSettings } from '~/components/chatbot/lib/types';
 import { getConversationIdHeaderName } from '~/lib/chatbots/conversion-cookie-name';
 
@@ -11,12 +23,29 @@ const SDK_NAME = process.env.CHATBOT_SDK_NAME;
 const SETTINGS_ENDPOINT = process.env.WIDGET_SETTINGS_ENDPOINT;
 const WIDGET_CSS_URL = process.env.WIDGET_CSS_URL;
 
-if (document.readyState !== 'loading') {
-  void onReady();
-} else {
-  document.addEventListener('DOMContentLoaded', onReady);
+const ChatbotWidgetContext = createContext<{
+  conversationId: string;
+  setConversationId: (conversationId: string) => void;
+}>({
+  conversationId: '',
+  setConversationId: () => {},
+});
+
+// initialize the widget
+initializeWidget();
+
+function initializeWidget() {
+  if (document.readyState !== 'loading') {
+    void onReady();
+  } else {
+    document.addEventListener('DOMContentLoaded', onReady);
+  }
 }
 
+/**
+ * Initializes the Chatbot by fetching settings, creating necessary elements,
+ * injecting styles, and hydrating the root component.
+ **/
 async function onReady() {
   try {
     const { settings, siteName, conversationId } = await fetchChatbotSettings();
@@ -29,12 +58,13 @@ async function onReady() {
     shadowRoot.id = 'makerkit-chatbot-container';
 
     const component = (
-      <ChatbotRenderer
-        conversationId={conversationId}
-        chatbotId={id}
-        siteName={siteName}
-        settings={settings}
-      />
+      <ChatbotWidgetContextProvider conversationId={conversationId}>
+        <ChatbotRenderer
+          chatbotId={id}
+          siteName={siteName}
+          settings={settings}
+        />
+      </ChatbotWidgetContextProvider>
     );
 
     shadow.appendChild(shadowRoot);
@@ -50,11 +80,13 @@ async function onReady() {
 
 function ChatbotRenderer(props: {
   chatbotId: string;
-  conversationId: string;
   siteName: string;
   settings: ChatbotSettings;
 }) {
   const [mounted, setMounted] = useState(false);
+  const { conversationId } = useContext(ChatbotWidgetContext);
+  const storageKey = getStorageKey(props.chatbotId, conversationId);
+  const clearConversation = useClearConversation();
 
   useEffect(() => {
     setMounted(true);
@@ -64,11 +96,14 @@ function ChatbotRenderer(props: {
     return null;
   }
 
-  const storageKey = `chatbot-${props.chatbotId}-${props.conversationId}`;
-
   return (
     <Suspense fallback={null}>
-      <Chatbot {...props} storageKey={storageKey} />
+      <Chatbot
+        {...props}
+        conversationId={conversationId}
+        storageKey={storageKey}
+        onClear={clearConversation}
+      />
     </Suspense>
   );
 }
@@ -84,22 +119,29 @@ async function fetchChatbotSettings() {
     throw new Error('Missing data-chatbot-id attribute');
   }
 
-  const conversationIdHeaderName = getConversationIdHeaderName();
-  const conversationId = localStorage.getItem(conversationIdHeaderName);
+  const conversationIdStorageKey = getConversationIdStorageKey();
+  const conversationId = localStorage.getItem(conversationIdStorageKey);
 
   const url = `${SETTINGS_ENDPOINT}?id=${chatbotId}`;
 
   const response = await fetch(url, {
     headers: {
-      [conversationIdHeaderName]: conversationId || '',
+      [getConversationIdHeaderName()]: conversationId || '',
     },
   });
 
-  return (await response.json()) as unknown as {
+  const payload = (await response.json()) as unknown as {
     settings: ChatbotSettings;
     siteName: string;
     conversationId: string;
   };
+
+  // if this is the first time we're loading the chatbot, store the conversation id
+  if (!conversationId) {
+    localStorage.setItem(conversationIdStorageKey, payload.conversationId);
+  }
+
+  return payload;
 }
 
 function getChatbotId() {
@@ -146,4 +188,51 @@ function injectStyle(shadowRoot: HTMLElement) {
   link.href = href;
 
   shadowRoot.appendChild(link);
+}
+
+function ChatbotWidgetContextProvider(
+  props: React.PropsWithChildren<{
+    conversationId: string;
+  }>,
+) {
+  const [conversationId, setConversationId] = useState(props.conversationId);
+
+  return (
+    <ChatbotWidgetContext.Provider
+      value={{
+        conversationId,
+        setConversationId,
+      }}
+    >
+      {props.children}
+    </ChatbotWidgetContext.Provider>
+  );
+}
+
+function getStorageKey(id: string, conversationId: string) {
+  return `chatbot-${id}-${conversationId}`;
+}
+
+function useClearConversation() {
+  const { setConversationId } = useContext(ChatbotWidgetContext);
+
+  return useCallback(() => {
+    const key = getConversationIdStorageKey();
+    localStorage.removeItem(key);
+
+    const conversationId = generateNewConversationId();
+    localStorage.setItem(key, conversationId);
+
+    setConversationId(conversationId);
+  }, []);
+}
+
+function generateNewConversationId() {
+  return nanoid(16);
+}
+
+function getConversationIdStorageKey() {
+  const chatbotId = getChatbotId();
+
+  return `chatbot-${chatbotId}-conversation-id`;
 }

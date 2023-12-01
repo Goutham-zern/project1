@@ -3,9 +3,11 @@
 This application is a Chatbot SaaS App Demo bootstrapped with the Makerkit Next.js
 Supabase kit.
 
-This application is a demo app and may have bugs and issues.
-If you plan on using it in a production environment, please ensure you test
-it thoroughly and fix any issues you may find.
+This application **is a demo app** and **may have bugs and issues**.
+If you plan on using it in a production environment, please **ensure you test
+it thoroughly and fix any issues you may find**. 
+
+The scope of this app is to show patterns and best practices for building a SaaS with Makerkit - and not to be a production-ready application.
 
 ## Details
 
@@ -16,6 +18,8 @@ Users can:
 2. Update the chatbot settings (e.g. name, description, etc.) and branding (e.g. colors, etc.)
 3. Crawl websites and train the chatbot using OpenAI
 4. Embed the chatbot on their website using a widget imported with a simple script tag
+
+NB: this demo application is considered feature-complete, so it's unlikely more features will be added. However, I will fix bugs and issues as they are reported.
 
 ## Requirements
 

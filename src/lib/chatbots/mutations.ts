@@ -73,5 +73,5 @@ export async function insertConversation(client: Client, params: {
   return client.from(CONVERSATIONS_TABLE).insert({
     chatbot_id: params.chatbotId,
     reference_id: params.conversationReferenceId,
-  });
+  }).select('id').single();
 }

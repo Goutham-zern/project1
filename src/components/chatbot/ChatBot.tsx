@@ -14,6 +14,9 @@ interface ChatBotProps {
   isDisabled?: boolean;
   settings?: ChatbotSettings;
   storageKey?: string;
+
+  onClear?: () => void;
+  onMessage?: (message: string) => void;
 }
 
 function ChatBot(props: ChatBotProps) {
@@ -26,6 +29,8 @@ function ChatBot(props: ChatBotProps) {
     conversationId,
     storageKey,
     siteName,
+    onClear,
+    onMessage,
   } = props;
 
   return (
@@ -36,6 +41,8 @@ function ChatBot(props: ChatBotProps) {
         defaultPrompts={defaultPrompts}
         storageKey={storageKey}
         siteName={siteName}
+        onClear={onClear}
+        onMessage={onMessage}
       />
     </ChatBotContextProvider>
   );

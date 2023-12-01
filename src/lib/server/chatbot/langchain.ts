@@ -7,7 +7,7 @@ import { ContextualCompressionRetriever } from 'langchain/retrievers/contextual_
 import { PromptTemplate } from 'langchain/prompts';
 import { RunnableSequence } from 'langchain/schema/runnable';
 import { StringOutputParser } from 'langchain/schema/output_parser';
-import { ConsoleCallbackHandler } from 'langchain/callbacks';
+import { BaseCallbackHandler, ConsoleCallbackHandler } from 'langchain/callbacks';
 import { EmbeddingsFilter } from 'langchain/retrievers/document_compressors/embeddings_filter';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { LLMResult } from 'langchain/dist/schema';
@@ -17,6 +17,7 @@ import { CHATBOT_MESSAGES_TABLE, CONVERSATIONS_TABLE } from '~/lib/db-tables';
 
 import getVectorStore from './vector-store';
 import getLogger from '~/core/logger';
+import configuration from '~/configuration';
 
 const OPENAI_MODEL = 'gpt-3.5-turbo-16k';
 
@@ -43,20 +44,24 @@ export default async function generateReplyFromChain(params: {
   const messages = [...params.messages];
   const latestMessage = messages.splice(-1)[0];
 
-  const callbacks = [
+  const callbacks: Array<BaseCallbackHandler> = [
     new StreamEndCallbackHandler(
       params.client,
       params.chatbotId,
       params.conversationReferenceId,
       latestMessage.content,
     ),
-    new ConsoleCallbackHandler(),
   ];
+
+  if (!configuration.production) {
+    callbacks.push(new ConsoleCallbackHandler());
+  }
 
   const model = new OpenAI({
     temperature: 0,
     modelName: OPENAI_MODEL,
     callbacks,
+    streaming: true,
   });
 
   const chain = await crateChain({
@@ -158,26 +163,66 @@ async function crateChain(params: {
   ]);
 }
 
-class StreamEndCallbackHandler {
+class StreamEndCallbackHandler extends BaseCallbackHandler {
+  name = 'handle-stream-end';
+
   constructor(
     private readonly client: SupabaseClient<Database>,
     private readonly chatbotId: string,
     private readonly conversationReferenceId: string,
     private readonly previousMessage: string,
-  ) {}
+  ) {
+    super();
+  }
 
   async handleLLMEnd(output: LLMResult) {
-    const { text } = output.llmOutput?.tokenUsage as {
-      text: string;
-    };
+    const logger = getLogger();
 
-    await insertConversationMessages({
+    logger.info(
+      {
+        chatbotId: this.chatbotId,
+        conversationReferenceId: this.conversationReferenceId,
+      },
+      `[handleLLMEnd] Inserting messages...`,
+    );
+
+    const generations = output.generations;
+
+    const text = generations.reduce((acc, generationsList) => {
+      return (
+        acc +
+        generationsList.reduce((innerAcc, generation) => {
+          return innerAcc + `\n` + generation.text;
+        }, '')
+      );
+    }, '');
+
+    const response = await insertConversationMessages({
       client: this.client,
       chatbotId: this.chatbotId,
       conversationReferenceId: this.conversationReferenceId,
       previousMessage: this.previousMessage,
       text,
     });
+
+    if (response.error) {
+      logger.error(
+        {
+          chatbotId: this.chatbotId,
+          conversationReferenceId: this.conversationReferenceId,
+          error: response.error,
+        },
+        `Error inserting messages.`,
+      );
+    } else {
+      logger.info(
+        {
+          chatbotId: this.chatbotId,
+          conversationReferenceId: this.conversationReferenceId,
+        },
+        `Successfully inserted messages.`,
+      );
+    }
   }
 }
 
@@ -203,10 +248,12 @@ export async function insertConversationMessages(params: {
       }, `Conversation not found. Can't insert messages.`
     );
 
-    return;
+    return {
+      error: new Error(`Conversation not found. Can't insert messages.`),
+    };
   }
 
-  await table.insert([
+  return table.insert([
     {
       chatbot_id: params.chatbotId,
       conversation_id: conversationId,

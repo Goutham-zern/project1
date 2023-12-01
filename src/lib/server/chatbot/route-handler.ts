@@ -11,6 +11,7 @@ import { Database } from '~/database.types';
 import { CHATBOTS_TABLE } from '~/lib/db-tables';
 import { getConversationIdHeaderName } from '~/lib/chatbots/conversion-cookie-name';
 import { insertConversation } from '~/lib/chatbots/mutations';
+import getLogger from '~/core/logger';
 
 const CONVERSATION_ID_STORAGE_KEY = getConversationIdHeaderName();
 
@@ -36,6 +37,7 @@ export function handleChatBotRequest({ responseHeaders }: {
   responseHeaders: Record<string, string>;
 }) {
   return async function (req: NextRequest) {
+    const logger = getLogger();
     const userAgent = req.headers.get('user-agent');
 
     if (isBot(userAgent)) {
@@ -60,6 +62,11 @@ export function handleChatBotRequest({ responseHeaders }: {
     const conversationReferenceId = req.headers.get(
       CONVERSATION_ID_STORAGE_KEY,
     );
+
+    logger.info({
+      conversationReferenceId,
+      chatbotId,
+    }, `Received chatbot message. Responding...`);
 
     // if the user is using the fake data streamer, we return a fake response
     if (USE_FAKE_DATA_STREAMER) {
@@ -86,10 +93,28 @@ export function handleChatBotRequest({ responseHeaders }: {
 
     // if it's the first message we insert a new conversation
     if (messages.length <= 2) {
-      await insertConversation(client, {
+      logger.info({
+        conversationReferenceId,
+        chatbotId,
+      }, `Detected new conversation. Inserting conversation...`);
+
+      const { data, error } = await insertConversation(client, {
         chatbotId,
         conversationReferenceId,
       });
+
+      if (error) {
+        logger.error({
+          conversationReferenceId,
+          chatbotId,
+        }, `Error inserting conversation.`);
+      } else {
+        logger.info({
+          conversationReferenceId,
+          conversationId: data.id,
+          chatbotId,
+        }, `Successfully inserted conversation.`);
+      }
     }
 
     // if the Organization can't generate an AI response, we use a normal search
@@ -123,6 +148,11 @@ export function handleChatBotRequest({ responseHeaders }: {
       siteName,
       conversationReferenceId,
     });
+
+    logger.info({
+      conversationReferenceId,
+      chatbotId,
+    }, `Stream generated. Sending response...`);
 
     return new StreamingTextResponse(stream, {
       headers: responseHeaders,
