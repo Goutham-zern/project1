@@ -14,22 +14,24 @@ interface ChatbotDesignPageParams {
 
 async function ChatbotDesignPage({ params }: ChatbotDesignPageParams) {
   const client = getSupabaseServerComponentClient();
-  const chatbot = await getChatbot(client, +params.chatbot);
+  const chatbot = await getChatbot(client, params.chatbot);
   const settings = chatbot.settings as unknown as ChatbotSettings;
 
   return (
     <PageBody className={'py-container space-y-4'}>
       <div className={'flex flex-col space-y-2'}>
-        <Heading type={4}>
-          Design
-        </Heading>
+        <Heading type={4}>Design</Heading>
 
         <p className={'text-sm text-gray-500 dark:text-gray-400'}>
           Make the Chatbot your own by customizing its appearance and behavior.
         </p>
       </div>
 
-      <DesignChatbotContainer settings={settings} chatbotId={params.chatbot} />
+      <DesignChatbotContainer
+        settings={settings}
+        siteName={chatbot.siteName}
+        chatbotId={params.chatbot}
+      />
     </PageBody>
   );
 }

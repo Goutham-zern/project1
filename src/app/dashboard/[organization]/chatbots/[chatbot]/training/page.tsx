@@ -1,12 +1,13 @@
-import { PageBody } from '~/core/ui/Page';
+import { PlusCircleIcon } from '@heroicons/react/24/outline';
 import getSupabaseServerComponentClient from '~/core/supabase/server-component-client';
+
+import { PageBody } from '~/core/ui/Page';
 import { getJobs } from '~/lib/jobs/queries';
 import JobsTable from './components/JobsTable';
 import CrawlWebsiteModal from '../components/CrawlWebsiteModal';
 import { getChatbot } from '~/lib/chatbots/queries';
 import Button from '~/core/ui/Button';
 import Heading from '~/core/ui/Heading';
-import { PlusCircleIcon } from '@heroicons/react/24/outline';
 
 interface ChatbotTrainingPageParams {
   params: {
@@ -27,7 +28,7 @@ async function ChatbotTrainingPage({
 
   const [data, chatbot] = await Promise.all([
     loadData(params.chatbot, { page }),
-    getChatbot(getSupabaseServerComponentClient(), +params.chatbot),
+    getChatbot(getSupabaseServerComponentClient(), params.chatbot),
   ]);
 
   const isEmpty = data.count === 0;
@@ -72,7 +73,7 @@ async function loadData(
   const startOffset = (page - 1) * perPage;
   const endOffset = page * perPage;
 
-  const { data: jobs, count } = await getJobs(client, +chatbot, {
+  const { data: jobs, count } = await getJobs(client, chatbot, {
     from: startOffset,
     to: endOffset,
   });
@@ -85,7 +86,7 @@ async function loadData(
   };
 }
 
-function TrainingButton(props: { chatbotId: number; url: string }) {
+function TrainingButton(props: { chatbotId: string; url: string }) {
   return (
     <div className={'flex'}>
       <CrawlWebsiteModal {...props}>
@@ -101,7 +102,7 @@ function TrainingButton(props: { chatbotId: number; url: string }) {
   );
 }
 
-function EmptyState(props: { chatbotId: number; url: string }) {
+function EmptyState(props: { chatbotId: string; url: string }) {
   return (
     <>
       <div

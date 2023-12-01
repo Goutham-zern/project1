@@ -39,6 +39,7 @@ const positions: Array<'bottom-right' | 'bottom-left'> = [
 function DesignChatbotContainer(
   props: React.PropsWithChildren<{
     chatbotId: string;
+    siteName: string;
     settings: ChatbotSettings;
   }>,
 ) {
@@ -156,7 +157,8 @@ function DesignChatbotContainer(
         isOpen
         isDisabled
         settings={settings}
-        chatbotId={+props.chatbotId}
+        chatbotId={props.chatbotId}
+        siteName={props.siteName}
         storageKey={LOCAL_STORAGE_KEY}
       />
     </>

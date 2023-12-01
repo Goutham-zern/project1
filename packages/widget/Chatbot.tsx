@@ -18,7 +18,7 @@ if (document.readyState !== 'loading') {
 
 async function onReady() {
   try {
-    const settings = await fetchChatbotSettings();
+    const { settings, siteName } = await fetchChatbotSettings();
     const id = getChatbotId();
 
     const element = document.createElement('div');
@@ -27,7 +27,13 @@ async function onReady() {
 
     shadowRoot.id = 'makerkit-chatbot-container';
 
-    const component = <ChatbotRenderer id={id} settings={settings} />;
+    const component = (
+      <ChatbotRenderer
+        id={id}
+        siteName={siteName}
+        settings={settings}
+      />
+    );
 
     shadow.appendChild(shadowRoot);
     injectStyle(shadowRoot);
@@ -41,7 +47,8 @@ async function onReady() {
 }
 
 function ChatbotRenderer(props: {
-  id: number;
+  id: string;
+  siteName: string;
   settings: ChatbotSettings;
 }) {
   const [mounted, setMounted] = useState(false);
@@ -56,7 +63,11 @@ function ChatbotRenderer(props: {
 
   return (
     <Suspense fallback={null}>
-      <Chatbot chatbotId={props.id} settings={props.settings} />
+      <Chatbot
+        siteName={props.siteName}
+        chatbotId={props.id}
+        settings={props.settings}
+      />
     </Suspense>
   );
 }
@@ -75,7 +86,10 @@ async function fetchChatbotSettings() {
   const url = `${SETTINGS_ENDPOINT}?id=${chatbotId}`;
   const response = await fetch(url);
 
-  return await response.json() as unknown as ChatbotSettings;
+  return (await response.json()) as unknown as {
+    settings: ChatbotSettings;
+    siteName: string;
+  };
 }
 
 function getChatbotId() {
@@ -91,7 +105,7 @@ function getChatbotId() {
     throw new Error('Missing data-chatbot-id attribute');
   }
 
-  return Number(chatbotId);
+  return chatbotId;
 }
 
 function getCurrentScript() {
@@ -101,10 +115,7 @@ function getCurrentScript() {
     throw new Error('Missing CHATBOT_SDK_NAME environment variable');
   }
 
-  if (
-    currentScript &&
-    currentScript.getAttribute('src')?.includes(SDK_NAME)
-  ) {
+  if (currentScript && currentScript.getAttribute('src')?.includes(SDK_NAME)) {
     return currentScript as HTMLScriptElement;
   }
 

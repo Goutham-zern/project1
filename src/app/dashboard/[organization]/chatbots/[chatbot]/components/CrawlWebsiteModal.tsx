@@ -34,7 +34,7 @@ const initialFormValues = {
 function CrawlWebsiteModal(
   props: React.PropsWithChildren<{
     url: string;
-    chatbotId: number;
+    chatbotId: string;
   }>,
 ) {
   return (
@@ -51,7 +51,7 @@ export default CrawlWebsiteModal;
 function ModalForm(
   props: React.PropsWithChildren<{
     url: string;
-    chatbotId: number;
+    chatbotId: string;
   }>,
 ) {
   const form = useForm({
@@ -162,11 +162,13 @@ function AnalyzeWebsiteSitemapStep(
   props: React.PropsWithChildren<{
     url: string;
     isCreatingJob: boolean;
-    chatbotId: number;
+    chatbotId: string;
+
     filters: {
       allow: string[];
       disallow: string[];
     };
+
     onBack: () => unknown;
     onNext: () => unknown;
   }>,
@@ -423,7 +425,8 @@ function useStartCrawlingJob() {
   const csrfToken = useCsrfToken();
 
   type Params = {
-    chatbotId: number;
+    chatbotId: string;
+
     filters: {
       allow: string[];
       disallow: string[];
@@ -436,7 +439,7 @@ function useStartCrawlingJob() {
 }
 
 function useSitemapLinks(
-  chatbotId: number,
+  chatbotId: string,
   url: string,
   filters: {
     allow: string[];

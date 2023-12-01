@@ -4,28 +4,25 @@ import { CHATBOTS_TABLE, DOCUMENTS_TABLE } from '~/lib/db-tables';
 
 type Client = SupabaseClient<Database>;
 
-export async function getChatbots(
-  client: Client,
-  organizationId: number
-) {
+export async function getChatbots(client: Client, organizationId: number) {
   return client
     .from(CHATBOTS_TABLE)
-    .select(`
+    .select(
+      `
       id,
       name,
       description,
       createdAt: created_at
-    `)
+    `,
+    )
     .eq('organization_id', organizationId);
 }
 
-export async function getChatbot(
-  client: Client,
-  chatbotId: number
-) {
+export async function getChatbot(client: Client, chatbotId: string) {
   const { data, error } = await client
     .from(CHATBOTS_TABLE)
-    .select(`
+    .select(
+      `
       id,
       name,
       description,
@@ -34,7 +31,8 @@ export async function getChatbot(
       url,
       createdAt: created_at,
       settings
-    `)
+    `,
+    )
     .eq('id', chatbotId)
     .single();
 
@@ -45,15 +43,15 @@ export async function getChatbot(
   return data;
 }
 
-export async function getChatbotSettings(
-  client: Client,
-  chatbotId: number
-) {
+export async function getChatbotSettings(client: Client, chatbotId: string) {
   const { data, error } = await client
     .from(CHATBOTS_TABLE)
-    .select(`
-      settings
-    `)
+    .select(
+      `
+      settings,
+      siteName: site_name
+    `,
+    )
     .eq('id', chatbotId)
     .single();
 
@@ -66,23 +64,26 @@ export async function getChatbotSettings(
 
 export async function getChatbotDocuments(
   client: Client,
-  chatbotId: number,
+  chatbotId: string,
   params: {
     from: number;
     to: number;
     query?: string;
-  }
+  },
 ) {
   let query = client
     .from(DOCUMENTS_TABLE)
-    .select(`
+    .select(
+      `
       createdAt: created_at,
       id,
       metadata
-    `, {
-      count: 'exact'
-    })
-    .eq('metadata -> chatbot_id::int', chatbotId)
+    `,
+      {
+        count: 'exact',
+      },
+    )
+    .filter('metadata -> chatbot_id::uuid', 'eq', `"${chatbotId}"`)
     .range(params.from, params.to);
 
   if (params.query) {
@@ -97,32 +98,34 @@ export async function getChatbotDocuments(
 
   return {
     data,
-    count: count ?? 0
+    count: count ?? 0,
   };
 }
 
-export async function getDocumentById(
-  client: Client,
-  id: number
-) {
+export async function getDocumentById(client: Client, id: string) {
   return client
     .from(DOCUMENTS_TABLE)
-    .select<string, {
-      id: number;
-      createdAt: string;
-      content: string;
-      metadata: {
-        chatbotId: number;
-        hash: string;
-        title: string;
-        url: string;
-      };
-    }>(`
+    .select<
+      string,
+      {
+        id: string;
+        createdAt: string;
+        content: string;
+        metadata: {
+          chatbotId: string;
+          hash: string;
+          title: string;
+          url: string;
+        };
+      }
+    >(
+      `
       id,
       createdAt: created_at,
       content,
       metadata
-    `,)
+    `,
+    )
     .eq('id', id)
     .single();
 }
@@ -131,16 +134,16 @@ export async function getDocumentByHash(
   client: Client,
   params: {
     hash: string;
-    chatbotId: number
-  }
+    chatbotId: string;
+  },
 ) {
   const query = client
     .from(DOCUMENTS_TABLE)
     .select(`id`, {
-      head: true
+      head: true,
     })
     .eq('metadata -> hash::text', params.hash)
-    .eq('metadata -> chatbotId::int', params.chatbotId)
+    .eq('metadata -> chatbot_id:uuid', `"${params.chatbotId}"`)
     .limit(1)
     .maybeSingle();
 

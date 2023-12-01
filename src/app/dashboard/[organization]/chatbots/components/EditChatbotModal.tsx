@@ -15,7 +15,7 @@ function EditChatbotModal(
       name: string;
       siteName: string;
       description?: string | null;
-      id: number;
+      id: string;
       url: string;
     };
   }>,

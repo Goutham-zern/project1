@@ -27,9 +27,9 @@ interface ChatbotPageParams {
 
 async function loadDocuments(
   client: SupabaseClient<Database>,
-  chatbotId: number,
+  chatbotId: string,
   page: number = 1,
-  query: string = '',
+  query = '',
 ) {
   const perPage = 10;
   const from = (page - 1) * perPage;
@@ -55,7 +55,7 @@ async function loadDocuments(
 
 async function ChatbotPage({ params, searchParams }: ChatbotPageParams) {
   const client = getSupabaseServerComponentClient();
-  const chatbotId = +params.chatbot;
+  const chatbotId = params.chatbot;
   const page = searchParams.page ? +searchParams.page : 1;
 
   const [props, chatbot] = await Promise.all([
@@ -93,7 +93,7 @@ async function ChatbotPage({ params, searchParams }: ChatbotPageParams) {
 
 export default ChatbotPage;
 
-function EmptyState(props: { id: number; url: string }) {
+function EmptyState(props: { id: string; url: string }) {
   return (
     <div
       className={

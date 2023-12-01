@@ -6,7 +6,7 @@ type Client = SupabaseClient<Database>;
 
 export async function getJobs(
   client: Client,
-  chatbotId: number,
+  chatbotId: string,
   params: {
     from: number;
     to: number;
@@ -15,7 +15,7 @@ export async function getJobs(
   const startOffset = params.from;
   const endOffset = params.to;
 
-  const {data, count, error} =await client
+  const { data, count, error } = await client
     .from(JOBS_TABLE)
     .select(
       `
@@ -26,9 +26,10 @@ export async function getJobs(
       tasksCount: tasks_count,
       tasksCompleted: tasks_completed_count,
       tasksSucceeded: tasks_succeeded_count
-    `, {
+    `,
+      {
         count: 'exact',
-      }
+      },
     )
     .eq('chatbot_id', chatbotId)
     .range(startOffset, endOffset);
@@ -39,8 +40,8 @@ export async function getJobs(
 
   return {
     data: data ?? [],
-    count: count ?? 0
-  }
+    count: count ?? 0,
+  };
 }
 
 export function getJobById(client: Client, jobId: number) {
@@ -56,9 +57,10 @@ export function getJobById(client: Client, jobId: number) {
       tasksCount: tasks_count,
       tasksCompleted: tasks_completed_count,
       tasksSucceeded: tasks_succeeded_count
-    `, {
+    `,
+      {
         count: 'exact',
-      }
+      },
     )
     .eq('id', jobId)
     .single();

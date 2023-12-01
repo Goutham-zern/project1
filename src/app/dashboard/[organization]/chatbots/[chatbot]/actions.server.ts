@@ -27,7 +27,7 @@ interface SitemapFilters {
 }
 
 export const getSitemapLinks = withSession(
-  async (params: { chatbotId: number; filters: SitemapFilters; csrfToken: string }) => {
+  async (params: { chatbotId: string; filters: SitemapFilters; csrfToken: string }) => {
     const client = getSupabaseServerActionClient();
     const logger = getLogger();
     const crawler = new Crawler();
@@ -59,7 +59,7 @@ export const getSitemapLinks = withSession(
 
 export const createChatbotCrawlingJob = withSession(
   async (params: {
-    chatbotId: number;
+    chatbotId: string;
     filters: SitemapFilters;
     csrfToken: string;
   }) => {
@@ -132,7 +132,7 @@ export const saveChatbotSettingsAction = withSession(
         primaryColor: z.string(),
         accentColor: z.string(),
         position: z.enum([`bottom-left`, `bottom-right`]),
-        chatbotId: z.coerce.number(),
+        chatbotId: z.string().uuid(),
       })
       .parse(Object.fromEntries(data));
 

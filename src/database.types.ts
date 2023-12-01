@@ -38,7 +38,7 @@ export interface Database {
         Row: {
           created_at: string
           description: string | null
-          id: number
+          id: string
           name: string
           organization_id: number
           settings: Json
@@ -48,17 +48,17 @@ export interface Database {
         Insert: {
           created_at?: string
           description?: string | null
-          id?: number
+          id?: string
           name: string
           organization_id: number
           settings?: Json
-          site_name?: string
+          site_name: string
           url: string
         }
         Update: {
           created_at?: string
           description?: string | null
-          id?: number
+          id?: string
           name?: string
           organization_id?: number
           settings?: Json
@@ -76,19 +76,25 @@ export interface Database {
       }
       conversations: {
         Row: {
-          chatbot_id: number
+          chatbot_id: string
           created_at: string
-          id: number
+          id: string
+          reference_id: string
+          user_email: string | null
         }
         Insert: {
-          chatbot_id: number
+          chatbot_id: string
           created_at?: string
-          id?: number
+          id?: string
+          reference_id: string
+          user_email?: string | null
         }
         Update: {
-          chatbot_id?: number
+          chatbot_id?: string
           created_at?: string
-          id?: number
+          id?: string
+          reference_id?: string
+          user_email?: string | null
         }
         Relationships: [
           {
@@ -104,28 +110,28 @@ export interface Database {
           content: string
           created_at: string
           embedding: string | null
-          id: number
+          id: string
           metadata: Json
         }
         Insert: {
           content: string
           created_at?: string
           embedding?: string | null
-          id?: number
+          id?: string
           metadata?: Json
         }
         Update: {
           content?: string
           created_at?: string
           embedding?: string | null
-          id?: number
+          id?: string
           metadata?: Json
         }
         Relationships: []
       }
       jobs: {
         Row: {
-          chatbot_id: number
+          chatbot_id: string
           completed_at: string | null
           created_at: string
           id: number
@@ -135,10 +141,9 @@ export interface Database {
           tasks_count: number
           tasks_succeeded_count: number
           updated_at: string
-          uuid: string
         }
         Insert: {
-          chatbot_id: number
+          chatbot_id: string
           completed_at?: string | null
           created_at?: string
           id?: never
@@ -148,10 +153,9 @@ export interface Database {
           tasks_count?: number
           tasks_succeeded_count?: number
           updated_at?: string
-          uuid?: string
         }
         Update: {
-          chatbot_id?: number
+          chatbot_id?: string
           completed_at?: string | null
           created_at?: string
           id?: never
@@ -161,7 +165,6 @@ export interface Database {
           tasks_count?: number
           tasks_succeeded_count?: number
           updated_at?: string
-          uuid?: string
         }
         Relationships: [
           {
@@ -223,8 +226,8 @@ export interface Database {
       }
       messages: {
         Row: {
-          chatbot_id: number
-          conversation_id: number
+          chatbot_id: string
+          conversation_id: string
           created_at: string
           id: number
           sender: Database["public"]["Enums"]["sender"]
@@ -232,8 +235,8 @@ export interface Database {
           type: Database["public"]["Enums"]["message_type"]
         }
         Insert: {
-          chatbot_id: number
-          conversation_id: number
+          chatbot_id: string
+          conversation_id: string
           created_at?: string
           id?: number
           sender: Database["public"]["Enums"]["sender"]
@@ -241,8 +244,8 @@ export interface Database {
           type: Database["public"]["Enums"]["message_type"]
         }
         Update: {
-          chatbot_id?: number
-          conversation_id?: number
+          chatbot_id?: string
+          conversation_id?: string
           created_at?: string
           id?: number
           sender?: Database["public"]["Enums"]["sender"]
@@ -486,7 +489,7 @@ export interface Database {
       }
       can_respond_to_message: {
         Args: {
-          chatbot: number
+          chatbot: string
         }
         Returns: boolean
       }
@@ -537,18 +540,6 @@ export interface Database {
           membership_id: number
         }
         Returns: number
-      }
-      kw_match_documents: {
-        Args: {
-          query_text: string
-          match_count: number
-        }
-        Returns: {
-          id: number
-          content: string
-          metadata: Json
-          similarity: number
-        }[]
       }
       match_documents: {
         Args: {

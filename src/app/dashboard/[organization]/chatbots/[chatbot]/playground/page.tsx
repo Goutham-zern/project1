@@ -21,7 +21,7 @@ const LOCAL_STORAGE_KEY = 'chatbot-playground';
 
 async function ChatbotPlaygroundPage({ params }: ChatbotPlaygroundPageParams) {
   const client = getSupabaseServerComponentClient();
-  const chatbot = await getChatbot(client, +params.chatbot);
+  const chatbot = await getChatbot(client, params.chatbot);
   const settings = chatbot.settings as unknown as ChatbotSettings;
 
   return (
@@ -38,6 +38,7 @@ async function ChatbotPlaygroundPage({ params }: ChatbotPlaygroundPageParams) {
       <ChatBot
         isOpen
         chatbotId={chatbot.id}
+        siteName={chatbot.siteName}
         settings={settings}
         storageKey={LOCAL_STORAGE_KEY}
       />

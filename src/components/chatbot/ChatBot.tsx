@@ -5,7 +5,8 @@ import ChatBotContextProvider from '~/components/chatbot/ChatbotContext';
 import { ChatbotSettings } from '~/components/chatbot/lib/types';
 
 interface ChatBotProps {
-  chatbotId: number;
+  chatbotId: string;
+  siteName: string;
 
   defaultPrompts?: string[];
   isOpen?: boolean;
@@ -21,12 +22,18 @@ function ChatBot(props: ChatBotProps) {
     isDisabled = false,
     settings,
     chatbotId,
-    storageKey
+    storageKey,
+    siteName,
   } = props;
 
   return (
     <ChatBotContextProvider state={{ isOpen, isDisabled, settings }}>
-      <ChatBotContainer chatbotId={chatbotId} defaultPrompts={defaultPrompts} storageKey={storageKey} />
+      <ChatBotContainer
+        chatbotId={chatbotId}
+        defaultPrompts={defaultPrompts}
+        storageKey={storageKey}
+        siteName={siteName}
+      />
     </ChatBotContextProvider>
   );
 }

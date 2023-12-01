@@ -1,18 +1,18 @@
 import { NextRequest } from 'next/server';
-import { headers } from 'next/headers';
 import isBot from 'isbot';
 import { StreamingTextResponse } from 'ai';
 import { z } from 'zod';
 import { SupabaseClient } from '@supabase/supabase-js';
 
-import generateReplyFromChain from './langchain';
-import configuration from '~/configuration';
+import generateReplyFromChain, { insertConversationMessages } from './langchain';
 import getSupabaseRouteHandlerClient from '~/core/supabase/route-handler-client';
 import getVectorStore from '~/lib/server/chatbot/vector-store';
 import { Database } from '~/database.types';
 import { CHATBOTS_TABLE } from '~/lib/db-tables';
+import { getConversationCookieName } from '~/lib/chatbots/conversion-cookie-name';
+import { insertConversation } from '~/lib/chatbots/mutations';
 
-const CHATBOT_TURNSTILE_SECRET_KEY = process.env.CHATBOT_TURNSTILE_SECRET_KEY;
+const CONVERSATION_ID_STORAGE_KEY = getConversationCookieName();
 
 // Set this to true to use a fake data streamer for testing purposes.
 let USE_FAKE_DATA_STREAMER = false;
@@ -38,6 +38,7 @@ export async function handleChatBotRequest(req: NextRequest) {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST',
+        'Access-Control-Allow-Headers': 'Content-Type, x-captcha-token, x-chatbot-id, x-conversation-id'
       },
     });
   }
@@ -46,26 +47,6 @@ export async function handleChatBotRequest(req: NextRequest) {
     return new Response(`No chatbot for you!`, {
       status: 403,
     });
-  }
-
-  // we validate the captcha token if the secret key is present
-  if (CHATBOT_TURNSTILE_SECRET_KEY) {
-    const captchaToken = headers().get('x-captcha-token');
-
-    // we check if the captcha token is present
-    if (!captchaToken) {
-      return new Response('Missing captcha token', { status: 400 });
-    }
-
-    // we validate the captcha token
-    await validateCaptchaToken(captchaToken);
-  } else {
-    // user is not using CAPTCHA - we warn them
-    if (!configuration.production) {
-      console.warn(
-        `It is recommended to set the CHATBOT_TURNSTILE_SECRET_KEY environment variable in production to prevent abuse.`,
-      );
-    }
   }
 
   // we parse the request body to get the messages sent by the user
@@ -78,8 +59,15 @@ export async function handleChatBotRequest(req: NextRequest) {
     ),
   });
 
-  const chatbotId = z.coerce.number().parse(req.headers.get('x-chatbot-id'));
+  const chatbotId = z.string().uuid().parse(req.headers.get('x-chatbot-id'));
   const { messages } = zodSchema.parse(await req.json());
+  const conversationReferenceId = req.cookies.get(CONVERSATION_ID_STORAGE_KEY)?.value;
+
+  if (!conversationReferenceId) {
+    throw new Error(
+      `Conversation Reference ID not found.`,
+    );
+  }
 
   // if the user is using the fake data streamer, we return a fake response
   if (USE_FAKE_DATA_STREAMER) {
@@ -98,12 +86,35 @@ export async function handleChatBotRequest(req: NextRequest) {
     chatbot_id: chatbotId,
   };
 
+  // if it's the first message
+  // we insert a new conversation
+  if (messages.length === 1) {
+    await insertConversation(client, {
+      chatbotId,
+      conversationReferenceId,
+    });
+  }
+
   // if the Organization can't generate an AI response, we use a normal search
   if (!canGenerateAIResponse.data) {
     const latestMessage = messages[messages.length - 1];
 
     // in this case, use a normal search function
-    return searchDocuments({ client, query: latestMessage.content, filter });
+    const { text, stream } = await searchDocuments({
+      client,
+      query: latestMessage.content,
+      filter,
+    });
+
+    await insertConversationMessages({
+      client,
+      chatbotId,
+      conversationReferenceId,
+      text,
+      previousMessage: latestMessage.content,
+    });
+
+    return new StreamingTextResponse(stream);
   }
 
   const siteName = await getChatbotSiteName(client, chatbotId);
@@ -111,8 +122,9 @@ export async function handleChatBotRequest(req: NextRequest) {
   const stream = await generateReplyFromChain({
     client,
     messages,
-    filter,
+    chatbotId,
     siteName,
+    conversationReferenceId,
   });
 
   return new StreamingTextResponse(stream);
@@ -120,56 +132,42 @@ export async function handleChatBotRequest(req: NextRequest) {
 
 export default handleChatBotRequest;
 
-async function validateCaptchaToken(token: string) {
-  let formData = new FormData();
-
-  if (!CHATBOT_TURNSTILE_SECRET_KEY) {
-    throw new Error('Missing CHATBOT_TURNSTILE_SECRET_KEY');
-  }
-
-  formData.append('secret', CHATBOT_TURNSTILE_SECRET_KEY);
-  formData.append('response', token);
-
-  const url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
-
-  const result = await fetch(url, {
-    body: formData,
-    method: 'POST',
-  });
-
-  const outcome = await result.json();
-
-  if (outcome.success) {
-    return true;
-  }
-
-  throw new Error('Invalid captcha token');
-}
-
 async function searchDocuments(params: {
   client: ReturnType<typeof getSupabaseRouteHandlerClient>;
   query: string;
-  filter: NumberObject;
+  filter: {
+    chatbot_id: string;
+  };
 }) {
-  const store = await getVectorStore(params.client);
-  const maxResults = 3;
+  const { client, filter, query } = params;
+  const store = await getVectorStore(client);
 
-  const documents = await store.similaritySearch(params.query, maxResults, {
-    filter: params.filter,
-  });
+  const documents = await store
+    .asRetriever({
+      filter,
+    })
+    .getRelevantDocuments(query);
 
-  const content = documents.map((document) => document.pageContent).join('---');
+  const content = documents
+    .map((document) => {
+      return `<a target='_blank' class='document-link' href="${document.metadata.url}">${document.metadata.title}</a>`;
+    })
+    .join('\n\n');
+
+  const contentResponse = `I found these documents that might help you:\n\n${content}`;
+  const text = documents.length ? contentResponse : 'Sorry, I was not able to find an answer for you.';
 
   const stream = new ReadableStream({
     start(controller) {
-      controller.enqueue(
-        `I found these documents that might help you:\n${content}`,
-      );
+      controller.enqueue(text);
       controller.close();
     },
   });
 
-  return new StreamingTextResponse(stream);
+  return {
+    stream,
+    text,
+  }
 }
 
 /**
@@ -206,7 +204,7 @@ function fakeDataStreamer() {
 
 async function getChatbotSiteName(
   client: SupabaseClient<Database>,
-  chatbotId: number,
+  chatbotId: string,
 ) {
   const response = await client
     .from(CHATBOTS_TABLE)

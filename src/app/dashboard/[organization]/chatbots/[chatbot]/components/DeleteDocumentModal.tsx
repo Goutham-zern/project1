@@ -10,7 +10,7 @@ function DeleteDocumentModal({
   onBeforeDelete,
   children,
 }: React.PropsWithChildren<{
-  documentId: number;
+  documentId: string;
   onBeforeDelete?: () => void;
 }>) {
   const [pending, startTransition] = useTransition();

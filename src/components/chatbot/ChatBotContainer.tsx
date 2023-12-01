@@ -34,7 +34,8 @@ function ChatBotContainer(
   props: React.PropsWithChildren<{
     defaultPrompts?: string[];
     storageKey?: string;
-    chatbotId: number;
+    siteName: string;
+    chatbotId: string;
   }>,
 ) {
   const { state, onOpenChange, onLoadingChange } = useContext(ChatBotContext);
@@ -52,7 +53,7 @@ function ChatBotContainer(
     isLoading,
   } = useChat({
     api: NEXT_PUBLIC_CHATBOT_API_URL,
-    initialMessages: chatbotMessagesStore.loadMessages(props.storageKey),
+    initialMessages: chatbotMessagesStore.loadMessages(props.storageKey, props.siteName),
     onError: () => {
       setError('Sorry, we could not process your request. Please try again.');
       onLoadingChange(false);
@@ -80,7 +81,7 @@ function ChatBotContainer(
               onClose={() => onOpenChange(false)}
               onRefresh={() => {
                 chatbotMessagesStore.saveMessages([], props.storageKey);
-                setMessages(chatbotMessagesStore.loadMessages(props.storageKey));
+                setMessages(chatbotMessagesStore.loadMessages(props.storageKey, props.siteName));
               }}
             />
 
@@ -221,7 +222,7 @@ function ChatBotMessage({ message }: { message: Message }) {
   const isUser = message.role === ChatBotMessageRole.User;
 
   const className = classNames(
-    `px-2 py-1 flex space-x-2 inline-flex text-sm rounded-md items-center`,
+    `px-2.5 py-1.5 flex space-x-2 inline-flex text-sm rounded items-center`,
     {
       'bg-gray-100 dark:bg-dark-700 text-gray-900 dark:text-gray-100': isBot,
       [`text-primary-foreground`]: isUser,
@@ -281,7 +282,6 @@ function ChatBotInput({
   handleInputChange: React.ChangeEventHandler<HTMLInputElement>;
 }>) {
   const { onLoadingChange } = useContext(ChatBotContext);
-  const siteKey = process.env.NEXT_PUBLIC_CHATBOT_SITE_KEY;
   const { state } = useContext(ChatBotContext);
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = useCallback(

@@ -7,7 +7,7 @@ type Client = SupabaseClient<Database>;
 export async function insertJob(
   client: Client,
   job: {
-    chatbotId: number;
+    chatbotId: string;
     organizationId: number;
     totalTasks: number;
   },

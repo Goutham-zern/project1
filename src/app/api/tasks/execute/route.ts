@@ -224,7 +224,7 @@ function sha256(content: string) {
 function getBodySchema() {
   return z
     .object({
-      chatbotId: z.number(),
+      chatbotId: z.string().uuid(),
       jobId: z.number(),
       links: z.array(z.string().url()),
     })

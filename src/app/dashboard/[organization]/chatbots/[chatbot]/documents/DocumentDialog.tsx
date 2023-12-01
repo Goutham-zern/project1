@@ -46,7 +46,7 @@ function DocumentDialog() {
         router.replace(pathName);
       }
     }}>
-      <DocumentContent document={docId} onBeforeDelete={() => setDocId(null)} />
+      <DocumentContent documentId={docId} onBeforeDelete={() => setDocId(null)} />
     </SideDialog>
   );
 }
@@ -54,10 +54,10 @@ function DocumentDialog() {
 export default DocumentDialog;
 
 function DocumentContent(props: {
-  document: string;
+  documentId: string;
   onBeforeDelete?: () => void;
 }) {
-  const { data, isLoading, error } = useFetchDocument(props.document);
+  const { data, isLoading, error } = useFetchDocument(props.documentId);
 
   if (error) {
     return (
@@ -116,12 +116,12 @@ function DocumentContent(props: {
   );
 }
 
-function useFetchDocument(document: string) {
+function useFetchDocument(documentId: string) {
   const client = useSupabase();
-  const key = ['documents', document];
+  const key = ['documents', documentId];
 
   return useQuery(key, async () => {
-    const { data, error } = await getDocumentById(client, +document);
+    const { data, error } = await getDocumentById(client, documentId);
 
     if (error) {
       throw error;

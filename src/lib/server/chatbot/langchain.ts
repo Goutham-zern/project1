@@ -1,5 +1,4 @@
-import configuration from '~/configuration';
-import getVectorStore from './vector-store';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 import { OpenAI } from 'langchain/llms/openai';
 import { Document as LangchanDocument } from 'langchain/document';
@@ -11,11 +10,14 @@ import { StringOutputParser } from 'langchain/schema/output_parser';
 import { ConsoleCallbackHandler } from 'langchain/callbacks';
 import { EmbeddingsFilter } from 'langchain/retrievers/document_compressors/embeddings_filter';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
+import { LLMResult } from 'langchain/dist/schema';
 import { Database } from '~/database.types';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { CHATBOT_MESSAGES_TABLE, CONVERSATIONS_TABLE } from '~/lib/db-tables';
+
+import getVectorStore from './vector-store';
+import getLogger from '~/core/logger';
 
 const OPENAI_MODEL = 'gpt-3.5-turbo-16k';
-const DEBUG = !configuration.production;
 
 /**
  * Generates a reply from a conversation chain.
@@ -28,28 +30,45 @@ const DEBUG = !configuration.production;
  */
 export default async function generateReplyFromChain(params: {
   client: SupabaseClient<Database>;
+
+  conversationReferenceId: string;
+  chatbotId: string;
+
   messages: Array<{
     role: 'assistant' | 'user';
     content: string;
   }>;
-  filter?: UnknownObject
+
   siteName: string;
 }) {
+  const messages = [...params.messages];
+  const latestMessage = messages.splice(-1)[0];
+
+  const callbacks = [
+    new StreamEndCallbackHandler(
+      params.client,
+      params.chatbotId,
+      params.conversationReferenceId,
+      latestMessage.content,
+    ),
+    new ConsoleCallbackHandler(),
+  ];
+
   const model = new OpenAI({
     temperature: 0,
     modelName: OPENAI_MODEL,
-    callbacks: DEBUG ? [new ConsoleCallbackHandler()] : [],
+    callbacks,
+    streaming: true,
   });
 
   const chain = await crateChain({
     client: params.client,
     model,
     questionPrompt: getPromptTemplate(params.siteName),
-    filter: params.filter
+    filter: {
+      chatbot_id: params.chatbotId,
+    },
   });
-
-  const messages = [...params.messages];
-  const latestMessage = messages.splice(-1)[0];
 
   const pairs = messages.reduce<string[][]>((acc, _, index, array) => {
     if (index % 2 === 0) {
@@ -139,6 +158,84 @@ async function crateChain(params: {
     model,
     new StringOutputParser(),
   ]);
+}
+
+class StreamEndCallbackHandler {
+  constructor(
+    private readonly client: SupabaseClient<Database>,
+    private readonly chatbotId: string,
+    private readonly conversationReferenceId: string,
+    private readonly previousMessage: string,
+  ) {}
+
+  async handleLLMEnd(output: LLMResult) {
+    const { text } = output.llmOutput?.tokenUsage as {
+      text: string;
+    };
+
+    await insertConversationMessages({
+      client: this.client,
+      chatbotId: this.chatbotId,
+      conversationReferenceId: this.conversationReferenceId,
+      previousMessage: this.previousMessage,
+      text,
+    });
+  }
+}
+
+export async function insertConversationMessages(params: {
+  client: SupabaseClient<Database>;
+  chatbotId: string;
+  conversationReferenceId: string;
+  previousMessage: string;
+  text: string;
+}) {
+  const table = params.client.from(CHATBOT_MESSAGES_TABLE);
+
+  const conversationId = await getConversationIdFromReferenceId(
+    params.client,
+    params.conversationReferenceId,
+  );
+
+  if (!conversationId) {
+    getLogger().warn(
+      {
+        chatbotId: params.chatbotId,
+        conversationReferenceId: params.conversationReferenceId,
+      }, `Conversation not found. Can't insert messages.`
+    );
+
+    return;
+  }
+
+  await table.insert([
+    {
+      chatbot_id: params.chatbotId,
+      conversation_id: conversationId,
+      text: params.previousMessage,
+      sender: 'user' as const,
+      type: 'user' as const,
+    },
+    {
+      chatbot_id: params.chatbotId,
+      conversation_id: conversationId,
+      text: params.text,
+      sender: 'assistant' as const,
+      type: 'ai' as const,
+    },
+  ]);
+}
+
+function getConversationIdFromReferenceId(
+  client: SupabaseClient<Database>,
+  conversationReferenceId: string,
+) {
+  return client
+    .from(CONVERSATIONS_TABLE)
+    .select('id')
+    .eq('reference_id', conversationReferenceId)
+    .single()
+    .then(({ data }) => data?.id);
 }
 
 function formatChatHistory(

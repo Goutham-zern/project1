@@ -10,7 +10,7 @@ import { Database } from '~/database.types';
 import getSupabaseServerActionClient from '~/core/supabase/action-client';
 
 type TaskParams = {
-  chatbotId: number;
+  chatbotId: string;
   delay: number;
   links: string[];
   jobId: number;
@@ -26,7 +26,8 @@ export default class ChatbotTaskQueue {
   async createJob(
     client: SupabaseClient<Database>,
     params: {
-      chatbotId: number;
+      chatbotId: string;
+
       filters: {
         allow: string[];
         disallow: string[];

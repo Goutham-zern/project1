@@ -13,7 +13,7 @@ async function ChatbotPublishPage({ params }: ChatbotPublishPageParams) {
   const widgetHostingUrl = process.env.NEXT_PUBLIC_WIDGET_HOSTING_URL;
 
   const script = `
-    <script data-chatbot='${params.chatbot}' src='${widgetHostingUrl}' />
+    <script async data-chatbot='${params.chatbot}' src='${widgetHostingUrl}' />
   `.trim();
 
   return (

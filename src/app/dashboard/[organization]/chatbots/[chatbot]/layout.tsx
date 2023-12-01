@@ -18,7 +18,7 @@ async function ChatbotLayout(
   }>,
 ) {
   const client = getSupabaseServerComponentClient();
-  const chatbot = await getChatbot(client, +props.params.chatbot);
+  const chatbot = await getChatbot(client, props.params.chatbot);
 
   const path = (path: string = '') => {
     const { organization, chatbot } = props.params;

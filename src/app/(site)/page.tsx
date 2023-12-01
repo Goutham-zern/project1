@@ -37,10 +37,11 @@ export default function Home() {
 
             <HeroTitle>
               <span>
-                The Chatbot Assistant for
+                AI Support chatbots
               </span>
-              <span>
-                for seamless customer support
+
+              <span className={'text-indigo-500'}>
+                for busy founders
               </span>
             </HeroTitle>
 
@@ -308,7 +309,7 @@ function HeroTitle({ children }: React.PropsWithChildren) {
     <h1
       className={
         'text-center text-4xl text-gray-600 dark:text-white md:text-5xl' +
-        ' flex flex-col font-heading font-medium xl:text-7xl 2xl:text-[5.2rem]'
+        ' flex flex-col font-heading font-medium xl:text-7xl 2xl:text-[6.2rem]'
       }
     >
       {children}

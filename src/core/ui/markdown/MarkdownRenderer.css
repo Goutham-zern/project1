@@ -13,3 +13,7 @@
 .MarkdownRenderer pre {
     @apply p-4 bg-gray-200 dark:bg-dark-700 break-words rounded-lg my-4 whitespace-break-spaces text-sm;
 }
+
+.MarkdownRenderer .document-link {
+    @apply p-4 border rounded block my-2 font-medium text-xs bg-gray-50 hover:bg-gray-100/50 dark:bg-dark-700 transition-colors;
+}

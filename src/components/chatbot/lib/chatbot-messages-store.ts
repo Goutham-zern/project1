@@ -5,16 +5,16 @@ import { ChatBotMessageRole } from '~/components/chatbot/lib/message-role.enum';
 
 const LOCAL_STORAGE_KEY = createLocalStorageKey();
 
-const emptyMessages = [
-  {
-    id: 'initial-message',
-    content: `Hi, I'm the ${configuration.site.siteName} chatbot! How can I help you?`,
-    role: ChatBotMessageRole.Assistant,
-  },
-];
-
 const chatBotMessagesStore = {
-  loadMessages(key = LOCAL_STORAGE_KEY): Message[] {
+  loadMessages(key = LOCAL_STORAGE_KEY, siteName: string): Message[] {
+    const emptyMessages = [
+      {
+        id: 'initial-message',
+        content: `Hi, I'm the ${siteName} chatbot! How can I help you?`,
+        role: ChatBotMessageRole.Assistant,
+      },
+    ];
+
     if (!isBrowser()) {
       return emptyMessages;
     }
