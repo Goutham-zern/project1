@@ -548,7 +548,7 @@ export interface Database {
           filter?: Json
         }
         Returns: {
-          id: number
+          id: string
           content: string
           metadata: Json
           similarity: number

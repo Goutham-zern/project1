@@ -27,7 +27,7 @@ export function insertChatbot(
 export async function updateChatbot(
   client: Client,
   chatbot: {
-    id: number;
+    id: string;
     name: string;
     url: string;
     description: string | null;

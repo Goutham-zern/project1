@@ -241,8 +241,6 @@ function AnalyzeWebsiteSitemapStep(
           pages. We found <strong>{numberOfFilteredPages}</strong> after
           applying the filters. Do you want to start crawling?
         </p>
-
-        <p>This will take a few minutes. We will notify you when it's done.</p>
       </div>
 
       <div className={'flex flex-col space-y-2'}>
@@ -341,7 +339,7 @@ function CrawlingFiltersForm(
       <div className={'flex flex-col space-y-2'}>
         <Heading type={5}>Disallow URLs</Heading>
         <span className={'text-xs'}>
-          Disallow URLs that you don't want to include in your chatbot. For
+          Disallow URLs that you don&apos;t want to include in your chatbot. For
           example, if you want to exclude the URLs starting with{' '}
           <code>/docs</code> from your chatbot, you can add <code>/docs</code>{' '}
           to the disallow list.
