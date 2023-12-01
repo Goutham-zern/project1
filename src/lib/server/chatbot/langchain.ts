@@ -11,6 +11,7 @@ import { ConsoleCallbackHandler } from 'langchain/callbacks';
 import { EmbeddingsFilter } from 'langchain/retrievers/document_compressors/embeddings_filter';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { LLMResult } from 'langchain/dist/schema';
+
 import { Database } from '~/database.types';
 import { CHATBOT_MESSAGES_TABLE, CONVERSATIONS_TABLE } from '~/lib/db-tables';
 
@@ -26,20 +27,18 @@ const OPENAI_MODEL = 'gpt-3.5-turbo-16k';
  * @param {Array<Object>} params.messages - An array of messages in the conversation.
  * Each message contains a role ('assistant' or 'user') and content (string).
  *
- * @return {Promise<string>} A promise that resolves with the generated reply.
- */
+ * */
 export default async function generateReplyFromChain(params: {
   client: SupabaseClient<Database>;
 
   conversationReferenceId: string;
   chatbotId: string;
+  siteName: string;
 
   messages: Array<{
     role: 'assistant' | 'user';
     content: string;
   }>;
-
-  siteName: string;
 }) {
   const messages = [...params.messages];
   const latestMessage = messages.splice(-1)[0];
@@ -58,7 +57,6 @@ export default async function generateReplyFromChain(params: {
     temperature: 0,
     modelName: OPENAI_MODEL,
     callbacks,
-    streaming: true,
   });
 
   const chain = await crateChain({
@@ -226,16 +224,17 @@ export async function insertConversationMessages(params: {
   ]);
 }
 
-function getConversationIdFromReferenceId(
+async function getConversationIdFromReferenceId(
   client: SupabaseClient<Database>,
   conversationReferenceId: string,
 ) {
-  return client
+  const { data } = await client
     .from(CONVERSATIONS_TABLE)
     .select('id')
     .eq('reference_id', conversationReferenceId)
-    .single()
-    .then(({ data }) => data?.id);
+    .single();
+
+  return data?.id;
 }
 
 function formatChatHistory(

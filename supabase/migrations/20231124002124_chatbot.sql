@@ -113,7 +113,7 @@ create function match_documents (
   match_count int DEFAULT null,
   filter jsonb DEFAULT '{}'
 ) returns table (
-  id bigint,
+  id uuid,
   content text,
   metadata jsonb,
   similarity float

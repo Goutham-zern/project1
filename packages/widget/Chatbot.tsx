@@ -3,6 +3,7 @@ import './chatbot.css';
 import { hydrateRoot } from 'react-dom/client';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { ChatbotSettings } from '~/components/chatbot/lib/types';
+import { getConversationIdHeaderName } from '~/lib/chatbots/conversion-cookie-name';
 
 const Chatbot = lazy(() => import('~/components/chatbot/ChatBot'));
 
@@ -18,7 +19,7 @@ if (document.readyState !== 'loading') {
 
 async function onReady() {
   try {
-    const { settings, siteName } = await fetchChatbotSettings();
+    const { settings, siteName, conversationId } = await fetchChatbotSettings();
     const id = getChatbotId();
 
     const element = document.createElement('div');
@@ -29,7 +30,8 @@ async function onReady() {
 
     const component = (
       <ChatbotRenderer
-        id={id}
+        conversationId={conversationId}
+        chatbotId={id}
         siteName={siteName}
         settings={settings}
       />
@@ -47,7 +49,8 @@ async function onReady() {
 }
 
 function ChatbotRenderer(props: {
-  id: string;
+  chatbotId: string;
+  conversationId: string;
   siteName: string;
   settings: ChatbotSettings;
 }) {
@@ -61,13 +64,11 @@ function ChatbotRenderer(props: {
     return null;
   }
 
+  const storageKey = `chatbot-${props.chatbotId}-${props.conversationId}`;
+
   return (
     <Suspense fallback={null}>
-      <Chatbot
-        siteName={props.siteName}
-        chatbotId={props.id}
-        settings={props.settings}
-      />
+      <Chatbot {...props} storageKey={storageKey} />
     </Suspense>
   );
 }
@@ -83,12 +84,21 @@ async function fetchChatbotSettings() {
     throw new Error('Missing data-chatbot-id attribute');
   }
 
+  const conversationIdHeaderName = getConversationIdHeaderName();
+  const conversationId = localStorage.getItem(conversationIdHeaderName);
+
   const url = `${SETTINGS_ENDPOINT}?id=${chatbotId}`;
-  const response = await fetch(url);
+
+  const response = await fetch(url, {
+    headers: {
+      [conversationIdHeaderName]: conversationId || '',
+    },
+  });
 
   return (await response.json()) as unknown as {
     settings: ChatbotSettings;
     siteName: string;
+    conversationId: string;
   };
 }
 

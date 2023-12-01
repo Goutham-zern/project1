@@ -6,6 +6,7 @@ import { ChatbotSettings } from '~/components/chatbot/lib/types';
 
 interface ChatBotProps {
   chatbotId: string;
+  conversationId: string;
   siteName: string;
 
   defaultPrompts?: string[];
@@ -22,6 +23,7 @@ function ChatBot(props: ChatBotProps) {
     isDisabled = false,
     settings,
     chatbotId,
+    conversationId,
     storageKey,
     siteName,
   } = props;
@@ -29,6 +31,7 @@ function ChatBot(props: ChatBotProps) {
   return (
     <ChatBotContextProvider state={{ isOpen, isDisabled, settings }}>
       <ChatBotContainer
+        conversationId={conversationId}
         chatbotId={chatbotId}
         defaultPrompts={defaultPrompts}
         storageKey={storageKey}

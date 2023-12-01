@@ -36,6 +36,7 @@ function ChatBotContainer(
     storageKey?: string;
     siteName: string;
     chatbotId: string;
+    conversationId: string;
   }>,
 ) {
   const { state, onOpenChange, onLoadingChange } = useContext(ChatBotContext);
@@ -54,16 +55,18 @@ function ChatBotContainer(
   } = useChat({
     api: NEXT_PUBLIC_CHATBOT_API_URL,
     initialMessages: chatbotMessagesStore.loadMessages(props.storageKey, props.siteName),
-    onError: () => {
+    onError: (error) => {
       setError('Sorry, we could not process your request. Please try again.');
       onLoadingChange(false);
+      console.error(error);
     },
     onResponse: () => {
       onLoadingChange(false);
     },
     headers: {
-      'x-chatbot-id': props.chatbotId.toString(),
-    },
+      'x-chatbot-id': props.chatbotId,
+      'x-conversation-id': props.conversationId,
+    }
   });
 
   useEffect(() => {

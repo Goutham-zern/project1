@@ -8,6 +8,7 @@ import terser from '@rollup/plugin-terser';
 import injectProcessEnv from 'rollup-plugin-inject-process-env';
 import postcss from 'rollup-plugin-postcss';
 import { visualizer } from "rollup-plugin-visualizer";
+import nodePolyfills from 'rollup-plugin-polyfill-node';
 
 import { config } from 'dotenv';
 
@@ -38,7 +39,7 @@ export default {
       presets: [
         ['@babel/preset-react', {
           runtime: 'automatic',
-          'targets': '>0.2%, not dead, not op_mini all'
+          'targets': '>0.1%, not dead, not op_mini all'
         }]
       ],
       extensions: ['.js', '.jsx', '.ts', '.tsx']
@@ -55,6 +56,9 @@ export default {
       }
     }),
     commonjs(),
+    nodePolyfills({
+      exclude: ['crypto']
+    }),
     injectProcessEnv(config({
       path: './packages/widget/.env.production'
     }).parsed),

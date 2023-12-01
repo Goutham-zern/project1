@@ -158,6 +158,7 @@ function DesignChatbotContainer(
         isDisabled
         settings={settings}
         chatbotId={props.chatbotId}
+        conversationId={`design-${props.chatbotId}`}
         siteName={props.siteName}
         storageKey={LOCAL_STORAGE_KEY}
       />

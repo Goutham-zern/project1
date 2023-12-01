@@ -1,27 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
-import { cookies } from 'next/headers';
+import isBot from 'isbot';
 
 import getSupabaseRouteHandlerClient from '~/core/supabase/route-handler-client';
 import { getChatbotSettings } from '~/lib/chatbots/queries';
-import { getConversationCookieName } from '~/lib/chatbots/conversion-cookie-name';
-import configuration from '~/configuration';
+import { getConversationIdHeaderName } from '~/lib/chatbots/conversion-cookie-name';
 
-const CONVERSATION_ID_STORAGE_KEY = getConversationCookieName();
+const CONVERSATION_ID_STORAGE_KEY = getConversationIdHeaderName();
+
+const HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET',
+  'Access-Control-Allow-Headers': 'Content-Type, x-chatbot-id, x-conversation-id, User-Agent',
+};
+
+export function OPTIONS() {
+  return new Response(null, {
+    status: 200,
+    headers: HEADERS,
+  });
+}
 
 export async function GET(req: NextRequest) {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
+  const userAgent = req.headers.get('user-agent');
+
+  if (isBot(userAgent)) {
+    return new Response(`No chatbot for you!`, {
+      status: 403,
     });
   }
 
   const chatbotId = req.nextUrl.searchParams.get('id');
-  const conversationId = req.cookies.get(CONVERSATION_ID_STORAGE_KEY);
+  let conversationId = req.headers.get(CONVERSATION_ID_STORAGE_KEY);
 
   if (!chatbotId) {
     return new Response('Missing chatbot ID', { status: 400 });
@@ -36,25 +46,16 @@ export async function GET(req: NextRequest) {
   // if there is no conversation ID, we generate one and store it in a cookie
   // so that we can keep track of the conversation
   if (!conversationId) {
-    const conversationUid = nanoid(16);
-
-    cookies().set(CONVERSATION_ID_STORAGE_KEY, conversationUid, {
-      path: '/',
-      httpOnly: true,
-      secure: configuration.production,
-    });
+    conversationId = nanoid(16);
   }
-
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-  };
 
   const payload = {
     settings,
     siteName,
+    conversationId,
   };
 
   return NextResponse.json(payload, {
-    headers,
+    headers: HEADERS
   });
 }

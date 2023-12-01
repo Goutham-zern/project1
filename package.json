@@ -25,7 +25,8 @@
     "test:e2e": "sh ./scripts/test.sh",
     "test:db": "supabase test db",
     "test:reset:db": "supabase db reset && supabase test db --debug",
-    "build:widget": "rollup -c ./rollup.config.mjs"
+    "build:widget": "rollup -c ./rollup.config.mjs",
+    "serve:widget": "npx http-server dist --cors -p 9099"
   },
   "prettier": {
     "tabWidth": 2,
@@ -57,7 +58,7 @@
     "@supabase/supabase-js": "^2.38.5",
     "@tanstack/react-table": "^8.10.7",
     "@upstash/qstash": "^2.3.0",
-    "ai": "^2.2.25",
+    "ai": "^2.2.27",
     "classnames": "^2.3.2",
     "clsx": "^2.0.0",
     "contentlayer": "0.3.4",
@@ -71,7 +72,7 @@
     "i18next-http-backend": "^2.4.2",
     "i18next-resources-to-backend": "^1.2.0",
     "isbot": "^3.7.1",
-    "langchain": "^0.0.197-rc.1",
+    "langchain": "^0.0.199",
     "markdown-to-jsx": "^7.3.2",
     "nanoid": "^5.0.3",
     "next": "14.0.3",
@@ -80,7 +81,7 @@
     "node-html-markdown": "^1.3.0",
     "node-html-parser": "^6.1.11",
     "nodemailer": "^6.9.7",
-    "openai": "^4.20.0",
+    "openai": "^4.20.1",
     "pino": "^8.16.2",
     "react": "18.2.0",
     "react-colorful": "^5.6.1",

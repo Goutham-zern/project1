@@ -2,8 +2,7 @@ import { memo } from 'react';
 import Markdown from 'markdown-to-jsx';
 import classNames from 'clsx';
 
-// @ts-ignore
-import MarkdownStyles from './MarkdownRenderer.css';
+import MarkdownStyles from './MarkdownRenderer.module.css';
 
 const MemoizedReactMarkdown = memo(
   Markdown,

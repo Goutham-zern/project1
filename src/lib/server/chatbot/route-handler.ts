@@ -9,10 +9,10 @@ import getSupabaseRouteHandlerClient from '~/core/supabase/route-handler-client'
 import getVectorStore from '~/lib/server/chatbot/vector-store';
 import { Database } from '~/database.types';
 import { CHATBOTS_TABLE } from '~/lib/db-tables';
-import { getConversationCookieName } from '~/lib/chatbots/conversion-cookie-name';
+import { getConversationIdHeaderName } from '~/lib/chatbots/conversion-cookie-name';
 import { insertConversation } from '~/lib/chatbots/mutations';
 
-const CONVERSATION_ID_STORAGE_KEY = getConversationCookieName();
+const CONVERSATION_ID_STORAGE_KEY = getConversationIdHeaderName();
 
 // Set this to true to use a fake data streamer for testing purposes.
 let USE_FAKE_DATA_STREAMER = false;
@@ -32,102 +32,102 @@ if (process.env.NODE_ENV === 'production') {
  * export const POST = handleChatBotRequest;
  *
  * */
-export async function handleChatBotRequest(req: NextRequest) {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST',
-        'Access-Control-Allow-Headers': 'Content-Type, x-captcha-token, x-chatbot-id, x-conversation-id'
-      },
+export function handleChatBotRequest({ responseHeaders }: {
+  responseHeaders: Record<string, string>;
+}) {
+  return async function (req: NextRequest) {
+    const userAgent = req.headers.get('user-agent');
+
+    if (isBot(userAgent)) {
+      return new Response(`No chatbot for you!`, {
+        status: 403,
+      });
+    }
+
+    // we parse the request body to get the messages sent by the user
+    const zodSchema = z.object({
+      messages: z.array(
+        z.object({
+          content: z.string(),
+          role: z.enum(['user', 'assistant'] as const),
+        }),
+      ),
     });
-  }
 
-  if (isBot(req.headers.get('user-agent'))) {
-    return new Response(`No chatbot for you!`, {
-      status: 403,
-    });
-  }
+    const chatbotId = z.string().uuid().parse(req.headers.get('x-chatbot-id'));
+    const { messages } = zodSchema.parse(await req.json());
 
-  // we parse the request body to get the messages sent by the user
-  const zodSchema = z.object({
-    messages: z.array(
-      z.object({
-        content: z.string(),
-        role: z.enum(['user', 'assistant'] as const),
-      }),
-    ),
-  });
-
-  const chatbotId = z.string().uuid().parse(req.headers.get('x-chatbot-id'));
-  const { messages } = zodSchema.parse(await req.json());
-  const conversationReferenceId = req.cookies.get(CONVERSATION_ID_STORAGE_KEY)?.value;
-
-  if (!conversationReferenceId) {
-    throw new Error(
-      `Conversation Reference ID not found.`,
+    const conversationReferenceId = req.headers.get(
+      CONVERSATION_ID_STORAGE_KEY,
     );
-  }
 
-  // if the user is using the fake data streamer, we return a fake response
-  if (USE_FAKE_DATA_STREAMER) {
-    return fakeDataStreamer();
-  }
+    // if the user is using the fake data streamer, we return a fake response
+    if (USE_FAKE_DATA_STREAMER) {
+      return fakeDataStreamer();
+    }
 
-  const client = getSupabaseRouteHandlerClient({
-    admin: true,
-  });
+    const client = getSupabaseRouteHandlerClient({
+      admin: true,
+    });
 
-  const canGenerateAIResponse = await client.rpc('can_respond_to_message', {
-    chatbot: chatbotId,
-  });
+    const canGenerateAIResponse = await client.rpc('can_respond_to_message', {
+      chatbot: chatbotId,
+    });
 
-  const filter = {
-    chatbot_id: chatbotId,
+    const filter = {
+      chatbot_id: chatbotId,
+    };
+
+    if (!conversationReferenceId) {
+      throw new Error(
+        `Missing conversation reference id in request headers: ${CONVERSATION_ID_STORAGE_KEY}`,
+      );
+    }
+
+    // if it's the first message we insert a new conversation
+    if (messages.length <= 2) {
+      await insertConversation(client, {
+        chatbotId,
+        conversationReferenceId,
+      });
+    }
+
+    // if the Organization can't generate an AI response, we use a normal search
+    if (!canGenerateAIResponse.data) {
+      const latestMessage = messages[messages.length - 1];
+
+      // in this case, use a normal search function
+      const { text, stream } = await searchDocuments({
+        client,
+        query: latestMessage.content,
+        filter,
+      });
+
+      await insertConversationMessages({
+        client,
+        chatbotId,
+        conversationReferenceId,
+        text,
+        previousMessage: latestMessage.content,
+      });
+
+      return new StreamingTextResponse(stream);
+    }
+
+    const siteName = await getChatbotSiteName(client, chatbotId);
+
+    const stream = await generateReplyFromChain({
+      client,
+      messages,
+      chatbotId,
+      siteName,
+      conversationReferenceId,
+    });
+
+    return new StreamingTextResponse(stream, {
+      headers: responseHeaders,
+    });
   };
-
-  // if it's the first message
-  // we insert a new conversation
-  if (messages.length === 1) {
-    await insertConversation(client, {
-      chatbotId,
-      conversationReferenceId,
-    });
-  }
-
-  // if the Organization can't generate an AI response, we use a normal search
-  if (!canGenerateAIResponse.data) {
-    const latestMessage = messages[messages.length - 1];
-
-    // in this case, use a normal search function
-    const { text, stream } = await searchDocuments({
-      client,
-      query: latestMessage.content,
-      filter,
-    });
-
-    await insertConversationMessages({
-      client,
-      chatbotId,
-      conversationReferenceId,
-      text,
-      previousMessage: latestMessage.content,
-    });
-
-    return new StreamingTextResponse(stream);
-  }
-
-  const siteName = await getChatbotSiteName(client, chatbotId);
-
-  const stream = await generateReplyFromChain({
-    client,
-    messages,
-    chatbotId,
-    siteName,
-    conversationReferenceId,
-  });
-
-  return new StreamingTextResponse(stream);
 }
 
 export default handleChatBotRequest;
