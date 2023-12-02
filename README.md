@@ -36,10 +36,13 @@ To run the application, you will need to add the following environment variables
 
 ```
 ## In the Next.js App
+
+OPENAI_API_KEY=
 NEXT_PUBLIC_CHATBOT_API_URL=/api/chat
 NEXT_PUBLIC_WIDGET_HOSTING_URL=makerkit-chatbot.js
 
 ## In the Chatbot Widget
+
 NEXT_PUBLIC_CHATBOT_API_URL=http://localhost:3000/api/chat
 WIDGET_CSS_URL=./makerkit-chatbot.css
 CHATBOT_SDK_NAME=makerkit-chatbot.js
@@ -52,6 +55,7 @@ For example, if you're hosting the application on `https://myapp.com`, you will 
 
 ```
 ## In the Next.js App
+OPENAI_API_KEY=
 NEXT_PUBLIC_CHATBOT_API_URL=https://myapp.com/api/chat
 NEXT_PUBLIC_WIDGET_HOSTING_URL=https://myapp.com/makerkit-chatbot.js
 
@@ -61,6 +65,9 @@ WIDGET_CSS_URL=https://myapp.com/makerkit-chatbot.css
 CHATBOT_SDK_NAME=https://myapp.com/makerkit-chatbot.js
 WIDGET_SETTINGS_ENDPOINT=https://myapp.com/api/chatbot
 ```
+
+Please make sure not to use the .env files for production keys (OPENAI and QSTASH). Instead, use the environment variables provided by your hosting provider.
+Locally, you can use the .env.local file - which is ignored by git and will not be pushed to the repository.
 
 ### Building the Chatbot Widget
 

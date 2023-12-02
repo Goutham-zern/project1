@@ -13,8 +13,9 @@ import { withSession } from '~/core/generic/actions-utils';
 import ChatbotTaskQueue from '~/lib/chatbots/chatbot-task-queue';
 
 import {
+  deleteChatbot,
   deleteDocument,
-  updateChatbotSettings,
+  updateChatbotSettings
 } from '~/lib/chatbots/mutations';
 
 import { ChatbotSettings } from '~/components/chatbot/lib/types';
@@ -189,3 +190,4 @@ export const saveChatbotSettingsAction = withSession(
     };
   },
 );
+

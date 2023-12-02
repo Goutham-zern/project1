@@ -6,9 +6,9 @@ import { ChatbotSettings } from '~/components/chatbot/lib/types';
 
 interface ChatBotProps {
   chatbotId: string;
-  conversationId: string;
   siteName: string;
 
+  conversationId?: string;
   defaultPrompts?: string[];
   isOpen?: boolean;
   isDisabled?: boolean;

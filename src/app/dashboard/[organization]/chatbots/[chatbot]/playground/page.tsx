@@ -1,6 +1,4 @@
 import dynamic from 'next/dynamic';
-import { cookies } from 'next/headers';
-import { nanoid } from 'nanoid';
 
 import { PageBody } from '~/core/ui/Page';
 import Heading from '~/core/ui/Heading';
@@ -25,11 +23,6 @@ async function ChatbotPlaygroundPage({ params }: ChatbotPlaygroundPageParams) {
   const client = getSupabaseServerComponentClient();
   const chatbot = await getChatbot(client, params.chatbot);
   const settings = chatbot.settings as unknown as ChatbotSettings;
-  let conversationId = getConversationId()?.value;
-
-  if (!conversationId) {
-    conversationId = `playground-${nanoid(16)}`
-  }
 
   return (
     <>
@@ -44,7 +37,6 @@ async function ChatbotPlaygroundPage({ params }: ChatbotPlaygroundPageParams) {
 
       <ChatBot
         isOpen
-        conversationId={conversationId}
         chatbotId={chatbot.id}
         siteName={chatbot.siteName}
         settings={settings}
@@ -55,7 +47,3 @@ async function ChatbotPlaygroundPage({ params }: ChatbotPlaygroundPageParams) {
 }
 
 export default ChatbotPlaygroundPage;
-
-function getConversationId() {
-  return cookies().get('playground-conversation-id');
-}

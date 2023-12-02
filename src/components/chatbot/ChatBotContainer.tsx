@@ -31,11 +31,12 @@ if (!NEXT_PUBLIC_CHATBOT_API_URL) {
 }
 
 type ChatBotProps = React.PropsWithChildren<{
-  defaultPrompts?: string[];
-  storageKey?: string;
   siteName: string;
   chatbotId: string;
-  conversationId: string;
+
+  defaultPrompts?: string[];
+  storageKey?: string;
+  conversationId?: string;
 
   onClear?: () => void;
   onMessage?: (message: string) => void;
@@ -75,7 +76,7 @@ function ChatBotContainer(
     },
     headers: {
       'x-chatbot-id': props.chatbotId,
-      'x-conversation-id': props.conversationId,
+      'x-conversation-id': props.conversationId ?? '',
     }
   });
 

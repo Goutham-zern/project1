@@ -37,11 +37,11 @@ export default function Home() {
 
             <HeroTitle>
               <span>
-                AI Support chatbots
+                The Chatbot SaaS Starter Kit
               </span>
 
               <span className={'text-indigo-500'}>
-                for busy founders
+                for Makers and Founders
               </span>
             </HeroTitle>
 
@@ -104,10 +104,13 @@ export default function Home() {
             <Pill>A modern, scalable, and secure SaaS Starter Kit</Pill>
 
             <div className={'flex flex-col space-y-2.5'}>
-              <Heading type={1}>The best tool in the space</Heading>
+              <Heading type={1}>
+                Build a Chatbot SaaS Business in Minutes
+              </Heading>
 
               <SubHeading>
-                Unbeatable Features and Benefits for Your SaaS Business
+                A modern, scalable, and secure SaaS Starter Kit to help you
+                build your next SaaS business in minutes.
               </SubHeading>
             </div>
           </div>

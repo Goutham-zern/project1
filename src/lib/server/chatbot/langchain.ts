@@ -32,7 +32,7 @@ const OPENAI_MODEL = 'gpt-3.5-turbo-16k';
 export default async function generateReplyFromChain(params: {
   client: SupabaseClient<Database>;
 
-  conversationReferenceId: string;
+  conversationReferenceId?: string;
   chatbotId: string;
   siteName: string;
 
@@ -169,7 +169,7 @@ class StreamEndCallbackHandler extends BaseCallbackHandler {
   constructor(
     private readonly client: SupabaseClient<Database>,
     private readonly chatbotId: string,
-    private readonly conversationReferenceId: string,
+    private readonly conversationReferenceId: Maybe<string>,
     private readonly previousMessage: string,
   ) {
     super();
@@ -196,6 +196,17 @@ class StreamEndCallbackHandler extends BaseCallbackHandler {
         }, '')
       );
     }, '');
+
+    if (!this.conversationReferenceId) {
+      logger.warn(
+        {
+          chatbotId: this.chatbotId,
+          conversationReferenceId: this.conversationReferenceId,
+        }, `Conversation reference id not found. Can't insert messages.`
+      );
+
+      return;
+    }
 
     const response = await insertConversationMessages({
       client: this.client,

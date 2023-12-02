@@ -12,14 +12,16 @@ import { CHATBOTS_TABLE } from '~/lib/db-tables';
 import { getConversationIdHeaderName } from '~/lib/chatbots/conversion-cookie-name';
 import { insertConversation } from '~/lib/chatbots/mutations';
 import getLogger from '~/core/logger';
+import configuration from '~/configuration';
 
 const CONVERSATION_ID_STORAGE_KEY = getConversationIdHeaderName();
+const isProduction = configuration.production;
 
 // Set this to true to use a fake data streamer for testing purposes.
 let USE_FAKE_DATA_STREAMER = false;
 
-if (process.env.NODE_ENV === 'production') {
-  // make sure to set this to false in production
+// make sure to set this to false in production
+if (isProduction) {
   USE_FAKE_DATA_STREAMER = false;
 }
 
@@ -62,6 +64,26 @@ export function handleChatBotRequest({ responseHeaders }: {
     const conversationReferenceId = req.headers.get(
       CONVERSATION_ID_STORAGE_KEY,
     );
+
+    /**
+     * If the conversation reference id is missing, we return a 400 error.
+     * This should never happen in production (unless the cookie gets cleared during a session) but it's possible in development when using the playground.
+     */
+    if (!conversationReferenceId) {
+      if (isProduction) {
+        logger.warn({
+          chatbotId,
+        }, `Missing conversation reference id.`);
+
+        return new Response(`Missing conversation reference id.`, {
+          status: 400,
+        });
+      } else {
+        logger.info({
+          chatbotId,
+        }, `Missing conversation reference id. Possible development environment.`);
+      }
+    }
 
     logger.info({
       conversationReferenceId,

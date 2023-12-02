@@ -1,6 +1,10 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Database, Json } from '~/database.types';
-import { CHATBOTS_TABLE, CONVERSATIONS_TABLE, DOCUMENTS_TABLE } from '~/lib/db-tables';
+import {
+  CHATBOTS_TABLE,
+  CONVERSATIONS_TABLE,
+  DOCUMENTS_TABLE,
+} from '~/lib/db-tables';
 import { ChatbotSettings } from '~/components/chatbot/lib/types';
 
 type Client = SupabaseClient<Database>;
@@ -48,7 +52,7 @@ export async function updateChatbot(
 export async function updateChatbotSettings(
   client: Client,
   chatbotId: string,
-  settings: ChatbotSettings
+  settings: ChatbotSettings,
 ) {
   return client
     .from(CHATBOTS_TABLE)
@@ -60,18 +64,31 @@ export async function updateChatbotSettings(
     });
 }
 
+export async function deleteChatbot(client: Client, chatbotId: string) {
+  return client.from(CHATBOTS_TABLE).delete().match({
+    id: chatbotId,
+  });
+}
+
 export async function deleteDocument(client: Client, documentId: number) {
   return client.from(DOCUMENTS_TABLE).delete().match({
     id: documentId,
   });
 }
 
-export async function insertConversation(client: Client, params: {
-  chatbotId: string;
-  conversationReferenceId: string;
-}) {
-  return client.from(CONVERSATIONS_TABLE).insert({
-    chatbot_id: params.chatbotId,
-    reference_id: params.conversationReferenceId,
-  }).select('id').single();
+export async function insertConversation(
+  client: Client,
+  params: {
+    chatbotId: string;
+    conversationReferenceId: string;
+  },
+) {
+  return client
+    .from(CONVERSATIONS_TABLE)
+    .insert({
+      chatbot_id: params.chatbotId,
+      reference_id: params.conversationReferenceId,
+    })
+    .select('id')
+    .single();
 }

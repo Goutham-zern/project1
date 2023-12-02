@@ -5,14 +5,17 @@ import { withI18n } from '~/i18n/with-i18n';
 import Trans from '~/core/ui/Trans';
 import Button from '~/core/ui/Button';
 import { PageBody } from '~/core/ui/Page';
-import getSupabaseServerComponentClient from '~/core/supabase/server-component-client';
 import Heading from '~/core/ui/Heading';
 import SubHeading from '~/core/ui/SubHeading';
 import loadAppData from '~/lib/server/loaders/load-app-data';
 import Alert from '~/core/ui/Alert';
 import CardButton from '~/core/ui/CardButton';
 import { getChatbots } from '~/lib/chatbots/queries';
+
+import getSupabaseServerComponentClient from '~/core/supabase/server-component-client';
+
 import CreateChatbotModal from '../components/CreateChatbotModal';
+import ChatbotItemDropdown from './components/ChatbotItemDropdown';
 
 export const metadata = {
   title: 'Chatbots',
@@ -43,7 +46,7 @@ async function ChatbotsPage({ params }: ChatbotsPageProps) {
       </AppHeader>
 
       <PageBody>
-        <ChatbotsList data={chatbots}  />
+        <ChatbotsList data={chatbots} />
       </PageBody>
     </>
   );
@@ -62,9 +65,7 @@ function EmptyState() {
         <div className={'flex flex-col space-y-2'}>
           <Heading>Let&apos;s create your first Chatbot</Heading>
 
-          <SubHeading>
-            Start offloading your customer support to AI
-          </SubHeading>
+          <SubHeading>Start offloading your customer support to AI</SubHeading>
         </div>
 
         <CreateChatbotModal canCreateChatbot={true}>
@@ -100,14 +101,16 @@ function ChatbotsList(
   return (
     <div className={'grid grid-cols-1 lg:grid-cols-3 gap-4 xl:gap-8'}>
       {data.map((item) => {
+        const href = `chatbots/` + item.id;
+
         return (
-          <CardButton
-            className={'px-8'}
-            href={`chatbots/` + item.id.toString()}
-            key={item.id}
-          >
-            <p>{item.name}</p>
-          </CardButton>
+          <div key={item.id} className={'relative'}>
+            <CardButton className={'px-8 w-full'} href={href}>
+              <p>{item.name}</p>
+            </CardButton>
+
+            <ChatbotItemDropdown chatbotId={item.id} />
+          </div>
         );
       })}
     </div>
@@ -123,12 +126,13 @@ async function loadChatbots(uid: string) {
     throw new Error(`No organization found`);
   }
 
-  const canCreateChatbot = client.rpc('can_create_chatbot', {
-    org_id: organization,
-  }).then(response => {
-    console.log(response);
-    return response.data ?? false;
-  });
+  const canCreateChatbot = client
+    .rpc('can_create_chatbot', {
+      org_id: organization,
+    })
+    .then((response) => {
+      return response.data ?? false;
+    });
 
   const chatbots = getChatbots(client, organization);
 

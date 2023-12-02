@@ -275,6 +275,14 @@ create policy "Users can update Chatbots in their Organization"
     current_user_is_member_of_organization(organization_id)
   );
 
+create policy "Users can delete Chatbots in their Organization"
+  on chatbots
+  for delete
+  to authenticated
+  using (
+    current_user_is_member_of_organization(organization_id)
+  );
+
 create policy "Users can select jobs in their Organization"
   on jobs
   for select
