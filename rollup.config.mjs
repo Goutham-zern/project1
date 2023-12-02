@@ -60,7 +60,7 @@ export default {
       exclude: ['crypto']
     }),
     injectProcessEnv(config({
-      path: './packages/widget/.env.production'
+      path: './packages/widget/.env'
     }).parsed),
     terser({
       ecma: 2020,

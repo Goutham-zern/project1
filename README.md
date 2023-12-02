@@ -14,21 +14,23 @@ The scope of this app is to show patterns and best practices for building a SaaS
 This application is a demo application that allows you to create a Chatbot SaaS application.
 
 Users can:
-1. Create various chatbots for each Organization
+1. Create chatbots in an Organization (based on plan details)
 2. Update the chatbot settings (e.g. name, description, etc.) and branding (e.g. colors, etc.)
 3. Crawl websites and train the chatbot using OpenAI
 4. Embed the chatbot on their website using a widget imported with a simple script tag
 
 NB: this demo application is considered feature-complete, so it's unlikely more features will be added. However, I will fix bugs and issues as they are reported.
 
-## Requirements
+## Requirements (Chatbot SaaS)
 
-To make this application work, you will need to:
+To make the Chatbot SaaS template application work, you will need to:
 
 1. Open an Upstash (QStash) account or replace the Task Queue with any other task queue service (e.g. AWS SQS, Google Cloud Tasks, Inngest, Trigger, etc.)
 2. Open an Open AI account and create an API key
 3. Open a Supabase account and create a project
 4. Open a Stripe account and create a product
+
+Additionally, you will setup the rest of the environment variables of the Core kit as described in the documentation.
 
 #### Adding the required environment variables
 
@@ -79,6 +81,18 @@ npm run build:widget
 
 This will create a `makerkit-chatbot.js` file in the `dist` folder.
 
+#### Environment Variables
+
+You need to update the file `packages/widget/.env` to update the environment variables for the Chatbot Widget.
+
+### Deploying the Chatbot Widget
+
+You will need to deploy the Chatbot Widget to a CDN. You can use any CDN you prefer, such as Cloudflare Pages, Netlify, Vercel, etc.
+
+Simply upload the `dist` folder to the CDN and make sure to set the correct headers for the files.
+
+Then, update the `NEXT_PUBLIC_WIDGET_HOSTING_URL` environment variable to point to the URL of the Chatbot Widget.
+
 ### Testing a Chatbot Widget
 
 Create an `index.html` in the `dist` folder and paste the Chatbot Widget code (you can find it in the `Publish` tab of the Chatbot). For example:
@@ -91,29 +105,40 @@ Make sure to change the `data-chatbot` attribute to the ID of the chatbot you wa
 
 Then, open the file in your browser. You should see the chatbot widget.
 
+To run a server locally, you can use:
+
+```
+npm run serve:widget
+```
+
 #### Adding a Plan to the Database
 
 You are free to specify your own limitations in the DB.
 
-To add a plan, you will insert a new row in the `plans` table. The `plans`
-table has the following information:
+To add a plan, you will insert a new row in the `plans` table. The `plans` table has the following information:
 
 ```sql
 create table plans (
-  id serial primary key,
   name text not null,
-  product_id text not null,
-  token_quota int not null,
-  embeddings_token_quota int not null,
-  chatbots_quota int not null
+  price_id text not null,
+  max_documents bigint not null,
+  max_messages bigint not null,
+  max_chatbots bigint not null,
+  primary key (price_id)
 );
 ```
 
-1. The `token_quota` is the number of tokens the user can use per month
-2. The `embeddings_token_quota` is the number of tokens the user can use to train the chatbot per month
-3. The `chatbots_quota` is the number of chatbots the user can create
+1. The `max_chatbots` is the number of chatbots the user can create
+2. The `max_messages` is the number of AI-generated messages the chatbot will reply to. If exceeded, the chatbot will reply with a list of matching articles from the knowledge base
+3. The `max_documents` is the number of documents the user can add to the knowledge base (or the number of pages the user can crawl)
+
+The `price_id` is the ID of the Stripe Price. You can find it in the Stripe dashboard.
+
+If the Price is an annual price, the SQL function checking the messages count will automatically divide the quota by 12.
 
 ## QStash Environment Variables
+
+We use QStash to run the background tasks that are used to crawl websites and train the chatbot. We crawl 30 pages for each task. We automatically add delays between each task to be gentle with the websites we crawl.
 
 To run the application, you will need to add the following environment variables:
 
@@ -126,11 +151,12 @@ QSTASH_NEXT_SIGNING_KEY=
 
 You can grab these values from your Upstash QStash dashboard.
 
-NB: You can change the Task Queue to any other service you prefer, such as AWS SQS, Google Cloud Tasks, Inngest, Trigger, etc. You will need to adjust the code accordingly.
+NB: You can change the Task Queue to any other service you prefer, such as AWS SQS, Google Cloud Tasks, Inngest, Trigger, etc. 
+You will need to adjust the code accordingly.
 
 ### QStash endpoint
 
-To test your queues locally, you need to run the QStash endpoint locally. You have various options, such as creating a tunnel with Ngrok, Cloudflare Tunnel, or even VSCode Port Forwarding.
+To test your queues locally, you need to run the QStash endpoint locally. You have various options, such as creating a tunnel with Ngrok, Cloudflare Tunnel, LocalCan, or even VSCode Port Forwarding.
 
 In such case, your `QSTASH_URL` will be the URL of the tunnel. Assuming your tunnel URL is `https://next-supabase-chatbot.ngrok.com`, you will set the following environment variable:
 
@@ -142,7 +168,7 @@ As you can see, you will need to add `/api/tasks/execute` at the end of the URL,
 
 ---
 
-# Next.js Supabase SaaS Starter Kit
+# Next.js Supabase SaaS Starter Kit (Core Kit documentation)
 
 MakerKit is a SaaS starter project built with Next.js, Supabase and Tailwind CSS.
 

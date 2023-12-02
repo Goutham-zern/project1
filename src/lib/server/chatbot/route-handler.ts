@@ -63,7 +63,7 @@ export function handleChatBotRequest({ responseHeaders }: {
 
     const conversationReferenceId = req.headers.get(
       CONVERSATION_ID_STORAGE_KEY,
-    );
+    ) ?? undefined;
 
     /**
      * If the conversation reference id is missing, we return a 400 error.
@@ -107,35 +107,31 @@ export function handleChatBotRequest({ responseHeaders }: {
       chatbot_id: chatbotId,
     };
 
-    if (!conversationReferenceId) {
-      throw new Error(
-        `Missing conversation reference id in request headers: ${CONVERSATION_ID_STORAGE_KEY}`,
-      );
-    }
-
     // if it's the first message we insert a new conversation
-    if (messages.length <= 2) {
-      logger.info({
-        conversationReferenceId,
-        chatbotId,
-      }, `Detected new conversation. Inserting conversation...`);
-
-      const { data, error } = await insertConversation(client, {
-        chatbotId,
-        conversationReferenceId,
-      });
-
-      if (error) {
-        logger.error({
-          conversationReferenceId,
-          chatbotId,
-        }, `Error inserting conversation.`);
-      } else {
+    if (conversationReferenceId) {
+      if (messages.length <= 2) {
         logger.info({
           conversationReferenceId,
-          conversationId: data.id,
           chatbotId,
-        }, `Successfully inserted conversation.`);
+        }, `Detected new conversation. Inserting conversation...`);
+
+        const { data, error } = await insertConversation(client, {
+          chatbotId,
+          conversationReferenceId,
+        });
+
+        if (error) {
+          logger.error({
+            conversationReferenceId,
+            chatbotId,
+          }, `Error inserting conversation.`);
+        } else {
+          logger.info({
+            conversationReferenceId,
+            conversationId: data.id,
+            chatbotId,
+          }, `Successfully inserted conversation.`);
+        }
       }
     }
 
@@ -150,13 +146,15 @@ export function handleChatBotRequest({ responseHeaders }: {
         filter,
       });
 
-      await insertConversationMessages({
-        client,
-        chatbotId,
-        conversationReferenceId,
-        text,
-        previousMessage: latestMessage.content,
-      });
+      if (conversationReferenceId) {
+        await insertConversationMessages({
+          client,
+          chatbotId,
+          conversationReferenceId,
+          text,
+          previousMessage: latestMessage.content,
+        });
+      }
 
       return new StreamingTextResponse(stream);
     }

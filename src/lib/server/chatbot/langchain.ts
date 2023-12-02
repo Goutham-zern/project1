@@ -32,7 +32,7 @@ const OPENAI_MODEL = 'gpt-3.5-turbo-16k';
 export default async function generateReplyFromChain(params: {
   client: SupabaseClient<Database>;
 
-  conversationReferenceId?: string;
+  conversationReferenceId: Maybe<string>;
   chatbotId: string;
   siteName: string;
 
