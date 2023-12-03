@@ -26,7 +26,7 @@
     "test:db": "supabase test db",
     "test:reset:db": "supabase db reset && supabase test db --debug",
     "build:widget": "rollup -c ./rollup.config.mjs",
-    "build:widget:productiom": "rollup -c ./rollup.config.mjs --environment=production",
+    "build:widget:production": "rollup -c ./rollup.config.mjs --environment=production",
     "serve:widget": "npx http-server dist --cors -p 9099"
   },
   "prettier": {
