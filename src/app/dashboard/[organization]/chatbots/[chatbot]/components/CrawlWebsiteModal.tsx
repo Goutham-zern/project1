@@ -22,6 +22,8 @@ import useSupabase from '~/core/hooks/use-supabase';
 import useCurrentOrganization from '~/lib/organizations/hooks/use-current-organization';
 import SideDialog from '~/core/ui/SideDialog';
 import { DialogTitle } from '~/core/ui/Dialog';
+import Trans from '~/core/ui/Trans';
+import { useTranslation } from 'react-i18next';
 
 const initialFormValues = {
   currentStep: 0,
@@ -39,7 +41,9 @@ function CrawlWebsiteModal(
 ) {
   return (
     <SideDialog Trigger={props.children}>
-      <DialogTitle className={'mb-4'}>Crawl Website</DialogTitle>
+      <DialogTitle className={'mb-4'}>
+        <Trans i18nKey={'chatbot:crawlWebsiteTitle'} />
+      </DialogTitle>
 
       <ModalForm url={props.url} chatbotId={props.chatbotId} />
     </SideDialog>
@@ -59,7 +63,14 @@ function ModalForm(
     mode: 'onChange',
   });
 
-  const steps = ['Website', 'Analyze', 'Finish'];
+  const { t } = useTranslation('chatbot');
+
+  const steps = [
+    'chatbot:websiteStepTitle',
+    'chatbot:analyzeStepTitle',
+    'chatbot:finishStepTitle',
+  ];
+
   const crawlingJobMutation = useStartCrawlingJob();
 
   const currentStep = form.watch('currentStep');
@@ -88,9 +99,9 @@ function ModalForm(
     });
 
     toast.promise(promise, {
-      success: 'Crawling started',
-      loading: 'Starting crawling...',
-      error: 'Failed to start crawling',
+      success: t('crawlingStarted'),
+      loading: t('crawlingStarting'),
+      error: t('crawlingFailed'),
     });
   };
 
@@ -128,18 +139,18 @@ function ConfirmWebsiteStep(
   }>,
 ) {
   return (
-    <div className={'flex flex-col space-y-4 text-sm animate-in fade-in'}>
+    <div className={'flex flex-col space-y-4 animate-in fade-in'}>
       <div className={'flex flex-col space-y-2'}>
         <p>
-          Let&apos;s crawl your website to train your chatbot with your existing
-          content. We will analyze your website and create a list of questions
-          and answers for your chatbot.
+          <Trans i18nKey={'chatbot:confirmWebsiteStepDescription'} />
         </p>
       </div>
 
       <div>
         <Label>
-          <span>Website URL</span>
+          <span>
+            <Trans i18nKey={'chatbot:chatbotWebsiteUrl'} />
+          </span>
         </Label>
 
         <pre className={'text-xs bg-gray-50 dark:bg-dark-950 border p-4 mt-2'}>
@@ -151,7 +162,7 @@ function ConfirmWebsiteStep(
 
       <div>
         <Button type={'button'} block onClick={props.onNext}>
-          Analyze
+          <Trans i18nKey={'chatbot:analyzeSubmitButton'} />
         </Button>
       </div>
     </div>
@@ -198,9 +209,9 @@ function AnalyzeWebsiteSitemapStep(
       >
         <Spinner />
 
-        <p>Just a moment...</p>
-
-        <p>We are about to train your chatbot on your website.</p>
+        <p>
+          <Trans i18nKey={'chatbot:creatingJobSpinnerLabel'} />
+        </p>
       </div>
     );
   }
@@ -214,7 +225,9 @@ function AnalyzeWebsiteSitemapStep(
       >
         <Spinner />
 
-        <p>We are analyzing your website...</p>
+        <p>
+          <Trans i18nKey={'chatbot:analyzeLoadingSpinnerLabel'} />
+        </p>
       </div>
     );
   }
@@ -222,9 +235,13 @@ function AnalyzeWebsiteSitemapStep(
   if (error) {
     return (
       <Alert type={'error'}>
-        <Alert.Heading>Website Analysis Failed</Alert.Heading>
+        <Alert.Heading>
+          <Trans i18nKey={'chatbot:websiteAnalysisErrorHeading'} />
+        </Alert.Heading>
 
-        <p>Sorry, we encountered an error while analyzing your website.</p>
+        <p>
+          <Trans i18nKey={'chatbot:websiteAnalysisError'} />
+        </p>
       </Alert>
     );
   }
@@ -232,15 +249,30 @@ function AnalyzeWebsiteSitemapStep(
   return (
     <div className={'flex flex-col space-y-4 text-sm animate-in fade-in'}>
       <div className={'flex flex-col space-y-2'}>
-        <p>
-          We found a sitemap for <code className={'text-xs'}>{props.url}</code>.
-        </p>
+        <p
+          dangerouslySetInnerHTML={{
+            __html: (
+              <Trans
+                i18nKey={'chatbot:websiteAnalysisResultHeading'}
+                values={{ url: props.url }}
+              />
+            ),
+          }}
+        />
 
-        <p>
-          The sitemap contains a total of <strong>{totalNumberOfPages}</strong>{' '}
-          pages. We found <strong>{numberOfFilteredPages}</strong> after
-          applying the filters. Do you want to start crawling?
-        </p>
+        <p
+          dangerouslySetInnerHTML={{
+            __html: (
+              <Trans
+                i18nKey={'chatbot:websiteAnalysisResult'}
+                values={{
+                  totalNumberOfPages,
+                  numberOfFilteredPages,
+                }}
+              />
+            ),
+          }}
+        />
       </div>
 
       <div className={'flex flex-col space-y-2'}>
@@ -251,7 +283,7 @@ function AnalyzeWebsiteSitemapStep(
               fallback={<WarnCannotCreateJobAlert />}
             >
               <Button type={'button'} block onClick={props.onNext}>
-                Yes, Start Crawling
+                <Trans i18nKey={'chatbot:startCrawlingButton'} />
               </Button>
             </If>
           </If>
@@ -264,7 +296,7 @@ function AnalyzeWebsiteSitemapStep(
             block
             onClick={props.onBack}
           >
-            Go Back
+            <Trans i18nKey={'common:goBack'} />
           </Button>
         </div>
       </div>
@@ -289,15 +321,16 @@ function CrawlingFiltersForm(
 
   return (
     <div className={'flex flex-col space-y-4'}>
-      <div className={'flex flex-col space-y-2'}>
-        <Heading type={5}>Allow URLs</Heading>
+      <div className={'flex flex-col space-y-4'}>
+        <div className={'flex flex-col space-y-2'}>
+          <Heading type={5}>
+            <Trans i18nKey={'chatbot:allowUrlsLabel'} />
+          </Heading>
 
-        <span className={'text-xs'}>
-          Allow URLs that you want to include in your chatbot. Leave this empty
-          to include all URLs. For example, if you only want to include all URLs
-          that start with <code>/blog</code>, you can add <code>/blog</code> to
-          the allow list.
-        </span>
+          <span className={'text-sm'}>
+            <Trans i18nKey={'chatbot:allowUrlsDescription'} />
+          </span>
+        </div>
 
         <div className={'flex flex-col space-y-1'}>
           {allowList.fields.map((field, index) => {
@@ -330,20 +363,24 @@ function CrawlingFiltersForm(
               size={'sm'}
               variant={'ghost'}
             >
-              <span>Add inclusion pattern</span>
+              <span>
+                <Trans i18nKey={'chatbot:addInclusionPattern'} />
+              </span>
             </Button>
           </div>
         </div>
       </div>
 
-      <div className={'flex flex-col space-y-2'}>
-        <Heading type={5}>Disallow URLs</Heading>
-        <span className={'text-xs'}>
-          Disallow URLs that you don&apos;t want to include in your chatbot. For
-          example, if you want to exclude the URLs starting with{' '}
-          <code>/docs</code> from your chatbot, you can add <code>/docs</code>{' '}
-          to the disallow list.
-        </span>
+      <div className={'flex flex-col space-y-4'}>
+        <div className={'flex flex-col space-y-2'}>
+          <Heading type={5}>
+            <Trans i18nKey={'chatbot:disallowUrlsLabel'} />
+          </Heading>
+
+          <span className={'text-sm'}>
+            <Trans i18nKey={'chatbot:disallowUrlsDescription'} />
+          </span>
+        </div>
 
         <div className={'flex flex-col space-y-1.5'}>
           {disallowList.fields.map((field, index) => {
@@ -376,7 +413,9 @@ function CrawlingFiltersForm(
               size={'sm'}
               variant={'ghost'}
             >
-              <span>Add exclusion pattern</span>
+              <span>
+                <Trans i18nKey={'chatbot:addExclusionPattern'} />
+              </span>
             </Button>
           </div>
         </div>
@@ -388,9 +427,11 @@ function CrawlingFiltersForm(
 function WarnCannotCreateJobAlert() {
   return (
     <Alert type={'warn'}>
-      <Alert.Heading>Upgrade Plan</Alert.Heading>
-      You have reached the limit of documents you can index. Please upgrade your
-      plan to index more documents.
+      <Alert.Heading>
+        <Trans i18nKey={'chatbot:createJobUpgradePlanHeading'} />
+      </Alert.Heading>
+
+      <Trans i18nKey={'chatbot:upgradePlanDescription'} />
     </Alert>
   );
 }

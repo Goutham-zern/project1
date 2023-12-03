@@ -4,6 +4,8 @@ import DesignChatbotContainer from './components/DesignChatbotContainer';
 import { getChatbot } from '~/lib/chatbots/queries';
 import getSupabaseServerComponentClient from '~/core/supabase/server-component-client';
 import { ChatbotSettings } from '~/components/chatbot/lib/types';
+import { withI18n } from '~/i18n/with-i18n';
+import Trans from '~/core/ui/Trans';
 
 interface ChatbotDesignPageParams {
   params: {
@@ -11,6 +13,10 @@ interface ChatbotDesignPageParams {
     chatbot: string;
   };
 }
+
+export const metadata = {
+  title: 'Design',
+};
 
 async function ChatbotDesignPage({ params }: ChatbotDesignPageParams) {
   const client = getSupabaseServerComponentClient();
@@ -20,10 +26,12 @@ async function ChatbotDesignPage({ params }: ChatbotDesignPageParams) {
   return (
     <PageBody className={'py-container space-y-4'}>
       <div className={'flex flex-col space-y-2'}>
-        <Heading type={4}>Design</Heading>
+        <Heading type={4}>
+          <Trans i18nKey={'chatbot:designTab'} />
+        </Heading>
 
         <p className={'text-sm text-gray-500 dark:text-gray-400'}>
-          Make the Chatbot your own by customizing its appearance and behavior.
+          <Trans i18nKey={'chatbot:designTabSubheading'} />
         </p>
       </div>
 
@@ -36,4 +44,4 @@ async function ChatbotDesignPage({ params }: ChatbotDesignPageParams) {
   );
 }
 
-export default ChatbotDesignPage;
+export default withI18n(ChatbotDesignPage);

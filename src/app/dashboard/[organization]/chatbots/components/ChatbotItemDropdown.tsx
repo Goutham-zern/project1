@@ -9,6 +9,7 @@ import {
 
 import { EllipsisVerticalIcon } from '@heroicons/react/24/outline';
 import DeleteChatbotModal from './DeleteChatbotModal';
+import Trans from '~/core/ui/Trans';
 
 function ChatbotItemDropdown(
   props: React.PropsWithChildren<{ chatbotId: string }>,
@@ -25,7 +26,7 @@ function ChatbotItemDropdown(
       <DropdownMenuContent>
         <DeleteChatbotModal chatbotId={props.chatbotId}>
           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-            Delete Chatbot
+            <Trans i18nKey={'chatbot:deleteChatbotButton'} />
           </DropdownMenuItem>
         </DeleteChatbotModal>
       </DropdownMenuContent>

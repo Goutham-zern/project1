@@ -1,6 +1,8 @@
 import { PageBody } from '~/core/ui/Page';
 import Heading from '~/core/ui/Heading';
 import CopyToClipboardButton from './components/CopyToClipboardButton';
+import Trans from '~/core/ui/Trans';
+import { withI18n } from '~/i18n/with-i18n';
 
 interface ChatbotPublishPageParams {
   params: {
@@ -8,6 +10,10 @@ interface ChatbotPublishPageParams {
     chatbot: string;
   };
 }
+
+export const metadata = {
+  title: 'Publish',
+};
 
 async function ChatbotPublishPage({ params }: ChatbotPublishPageParams) {
   const widgetHostingUrl = process.env.NEXT_PUBLIC_WIDGET_HOSTING_URL;
@@ -19,12 +25,13 @@ async function ChatbotPublishPage({ params }: ChatbotPublishPageParams) {
   return (
     <PageBody className={'py-container space-y-4'}>
       <div className={'flex flex-col space-y-2'}>
-        <Heading type={4}>Publish</Heading>
+        <Heading type={4}>
+          <Trans i18nKey={'chatbot:publishTab'} />
+        </Heading>
 
         <div>
           <p className={'text-sm text-gray-500 dark:text-gray-400'}>
-            Copy and paste the following code snippet into your website to embed
-            your chatbot.
+            <Trans i18nKey={'chatbot:publishTabSubheading'} />
           </p>
         </div>
       </div>
@@ -40,4 +47,4 @@ async function ChatbotPublishPage({ params }: ChatbotPublishPageParams) {
   );
 }
 
-export default ChatbotPublishPage;
+export default withI18n(ChatbotPublishPage);

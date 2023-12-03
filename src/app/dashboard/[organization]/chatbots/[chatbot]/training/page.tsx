@@ -8,6 +8,8 @@ import CrawlWebsiteModal from '../components/CrawlWebsiteModal';
 import { getChatbot } from '~/lib/chatbots/queries';
 import Button from '~/core/ui/Button';
 import Heading from '~/core/ui/Heading';
+import { withI18n } from '~/i18n/with-i18n';
+import Trans from '~/core/ui/Trans';
 
 interface ChatbotTrainingPageParams {
   params: {
@@ -19,6 +21,10 @@ interface ChatbotTrainingPageParams {
     page?: string;
   };
 }
+
+export const metadata = {
+  title: 'Training',
+};
 
 async function ChatbotTrainingPage({
   params,
@@ -41,11 +47,12 @@ async function ChatbotTrainingPage({
     <PageBody className={'py-container space-y-4'}>
       <div className={'flex space-x-4 justify-between items-end'}>
         <div className={'flex flex-col space-y-2'}>
-          <Heading type={4}>Training</Heading>
+          <Heading type={4}>
+            <Trans i18nKey={'chatbot:trainingTab'} />
+          </Heading>
 
           <p className={'text-sm text-gray-500 dark:text-gray-400'}>
-            Train your chatbot with new documents or see the status of previous
-            training jobs.
+            <Trans i18nKey={'chatbot:trainingTabSubheading'} />
           </p>
         </div>
 
@@ -59,7 +66,7 @@ async function ChatbotTrainingPage({
   );
 }
 
-export default ChatbotTrainingPage;
+export default withI18n(ChatbotTrainingPage);
 
 async function loadData(
   chatbot: string,
@@ -94,7 +101,7 @@ function TrainingButton(props: { chatbotId: string; url: string }) {
           <PlusCircleIcon className={'h-4 w-4 mr-2'} />
 
           <span>
-            Train Chatbot
+            <Trans i18nKey={'chatbot:trainChatbotButton'} />
           </span>
         </Button>
       </CrawlWebsiteModal>
@@ -109,14 +116,20 @@ function EmptyState(props: { chatbotId: string; url: string }) {
         className={'flex flex-col space-y-8 items-center justify-center flex-1'}
       >
         <div className={'flex flex-col space-y-2 items-center justify-center'}>
-          <Heading type={3}>No previous imports found</Heading>
+          <Heading type={3}>
+            <Trans i18nKey={'chatbot:noJobsFound'} />
+          </Heading>
 
-          <div>You have not imported any documents yet.</div>
+          <div>
+            <Trans i18nKey={'chatbot:noJobsFoundDescription'} />
+          </div>
         </div>
 
         <div>
           <CrawlWebsiteModal {...props}>
-            <Button>Import documents from a website</Button>
+            <Button>
+              <Trans i18nKey={'chatbot:importDocumentsButton'} />
+            </Button>
           </CrawlWebsiteModal>
         </div>
       </div>

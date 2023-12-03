@@ -12,6 +12,8 @@ import CrawlWebsiteModal from '../components/CrawlWebsiteModal';
 import DocumentsTable from '../components/DocumentsTable';
 import notFound from '~/app/not-found';
 import DocumentDialog from './DocumentDialog';
+import { withI18n } from '~/i18n/with-i18n';
+import Trans from '~/core/ui/Trans';
 
 interface ChatbotPageParams {
   params: {
@@ -24,6 +26,10 @@ interface ChatbotPageParams {
     query?: string;
   };
 }
+
+export const metadata = {
+  title: 'Documents',
+};
 
 async function loadDocuments(
   client: SupabaseClient<Database>,
@@ -71,11 +77,11 @@ async function ChatbotPage({ params, searchParams }: ChatbotPageParams) {
     <PageBody className={'py-container space-y-4'}>
       <div className={'flex flex-col space-y-2'}>
         <Heading type={4}>
-          Documents
+          <Trans i18nKey={'chatbot:documentsTab'} />
         </Heading>
 
         <p className={'text-sm text-gray-500 dark:text-gray-400'}>
-          These are the documents that your chatbot has learned from your website.
+          <Trans i18nKey={'chatbot:documentsTabSubheading'} />
         </p>
       </div>
 
@@ -91,7 +97,7 @@ async function ChatbotPage({ params, searchParams }: ChatbotPageParams) {
   );
 }
 
-export default ChatbotPage;
+export default withI18n(ChatbotPage)
 
 function EmptyState(props: { id: string; url: string }) {
   return (

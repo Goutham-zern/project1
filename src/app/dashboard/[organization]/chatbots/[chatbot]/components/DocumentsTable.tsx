@@ -3,7 +3,8 @@
 import { useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { ColumnDef } from '@tanstack/react-table';
 import { EllipsisVerticalIcon } from '@heroicons/react/24/outline';
 
@@ -18,6 +19,7 @@ import {
 } from '~/core/ui/Dropdown';
 
 import DeleteDocumentModal from './DeleteDocumentModal';
+import If from '~/core/ui/If';
 
 type Data = Awaited<ReturnType<typeof getChatbotDocuments>>;
 
@@ -36,9 +38,9 @@ interface DocMetadata {
 }
 
 function DocumentsTable(props: DocumentTableProps) {
-  const columns = useMemo(() => getColumns(), []);
   const router = useRouter();
   const pathname = usePathname();
+  const columns = useGetColumns();
 
   return (
     <DataTable
@@ -56,33 +58,40 @@ function DocumentsTable(props: DocumentTableProps) {
 
 export default DocumentsTable;
 
-function getColumns(): ColumnDef<Data['data'][0]>[] {
+function useGetColumns() {
+  const { t } = useTranslation('chatbot');
+  return useMemo(() => getColumns(t), []);
+}
+
+function getColumns(t: TFunction<'chatbot'>): ColumnDef<Data['data'][0]>[] {
   return [
     {
       id: 'title',
-      header: 'Title',
+      header: t('documentTitle'),
       cell: ({ row }) => {
         const doc = row.original;
         const metadata = doc.metadata as unknown as DocMetadata;
 
         return (
-          <Link href={`documents?document=${doc.id}`}>{metadata.title}</Link>
+          <Link className={'hover:underline'} href={`documents?document=${doc.id}`}>{metadata.title}</Link>
         );
       },
     },
     {
       id: 'createdAt',
-      header: 'Created At',
+      header: t('documentCreatedAt'),
       cell: ({ row }) => {
         const value = row.original.createdAt;
 
-        return new Date(value).toLocaleDateString();
+        return new Date(value).toLocaleString();
       },
     },
     {
       id: 'actions',
       cell: ({ row }) => {
         const doc = row.original;
+        const metadata = doc.metadata as unknown as DocMetadata;
+        const originalUrl = metadata.url;
 
         return (
           <div className={'flex justify-end'}>
@@ -93,12 +102,22 @@ function getColumns(): ColumnDef<Data['data'][0]>[] {
 
               <DropdownMenuContent collisionPadding={{ right: 50 }}>
                 <DropdownMenuItem asChild>
-                  <Link href={`documents?document=${doc.id}`}>View</Link>
+                  <Link href={`documents?document=${doc.id}`}>
+                    {t('viewDocument')}
+                  </Link>
                 </DropdownMenuItem>
+
+                <If condition={originalUrl}>
+                  <DropdownMenuItem asChild>
+                    <Link target={'_blank'} href={originalUrl}>
+                      {t('visitOriginalDocument')}
+                    </Link>
+                  </DropdownMenuItem>
+                </If>
 
                 <DeleteDocumentModal documentId={doc.id}>
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                    Delete
+                    {t('deleteDocument')}
                   </DropdownMenuItem>
                 </DeleteDocumentModal>
               </DropdownMenuContent>

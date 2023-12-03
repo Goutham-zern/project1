@@ -8,6 +8,7 @@ import Textarea from '~/core/ui/Textarea';
 import getSupabaseServerActionClient from '~/core/supabase/action-client';
 import Button from '~/core/ui/Button';
 import { updateChatbot } from '~/lib/chatbots/mutations';
+import Trans from '~/core/ui/Trans';
 
 function EditChatbotModal(
   props: React.PropsWithChildren<{
@@ -21,33 +22,41 @@ function EditChatbotModal(
   }>,
 ) {
   return (
-    <Modal heading={'Edit Chatbot'} Trigger={props.children}>
+    <Modal heading={
+      <Trans i18nKey={'chatbot:editChatbotTitle'} />
+    } Trigger={props.children}>
       <form action={updateChatbotAction}>
         <div className={'flex flex-col space-y-4'}>
+          <div>
+            <p className={'text-sm'}>
+              <Trans i18nKey={'chatbot:editChatbotSubheading'} />
+            </p>
+          </div>
+
           <input type='hidden' name={'id'} value={props.chatbot.id.toString()} />
 
           <TextFieldLabel>
-            Name
+            <Trans i18nKey={'chatbot:chatbotName'} />
             <TextFieldInput name={'name'} defaultValue={props.chatbot.name} required />
           </TextFieldLabel>
 
           <TextFieldLabel>
-            Website URL
+            <Trans i18nKey={'chatbot:chatbotWebsiteUrl'} />
             <TextFieldInput name={'url'} defaultValue={props.chatbot.url} required type={'url'} />
           </TextFieldLabel>
 
           <TextFieldLabel>
-            Chatbot Website Name
+            <Trans i18nKey={'chatbot:chatbotWebsiteName'} />
             <TextFieldInput name={'site_name'} defaultValue={props.chatbot.siteName} required />
           </TextFieldLabel>
 
           <TextFieldLabel>
-            Description
+            <Trans i18nKey={'chatbot:chatbotDescription'} />
             <Textarea name={'description'} defaultValue={props.chatbot.description ?? ''} />
           </TextFieldLabel>
 
           <Button>
-            Save
+            <Trans i18nKey={'chatbot:editChatbotSubmitButton'} />
           </Button>
         </div>
       </form>

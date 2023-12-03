@@ -1,6 +1,4 @@
 import { SupabaseClient } from '@supabase/supabase-js';
-
-import { OpenAI } from 'langchain/llms/openai';
 import { Document as LangchanDocument } from 'langchain/document';
 
 import { ContextualCompressionRetriever } from 'langchain/retrievers/contextual_compression';
@@ -10,7 +8,9 @@ import { StringOutputParser } from 'langchain/schema/output_parser';
 import { BaseCallbackHandler, ConsoleCallbackHandler } from 'langchain/callbacks';
 import { EmbeddingsFilter } from 'langchain/retrievers/document_compressors/embeddings_filter';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
-import { LLMResult } from 'langchain/dist/schema';
+import { LLMResult } from 'langchain/schema';
+import { ChatOpenAI } from 'langchain/chat_models/openai';
+import { DocumentCompressorPipeline } from 'langchain/retrievers/document_compressors';
 
 import { Database } from '~/database.types';
 import { CHATBOT_MESSAGES_TABLE, CONVERSATIONS_TABLE } from '~/lib/db-tables';
@@ -18,8 +18,9 @@ import { CHATBOT_MESSAGES_TABLE, CONVERSATIONS_TABLE } from '~/lib/db-tables';
 import getVectorStore from './vector-store';
 import getLogger from '~/core/logger';
 import configuration from '~/configuration';
+import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 
-const OPENAI_MODEL = 'gpt-3.5-turbo-16k';
+const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-3.5-turbo';
 
 /**
  * Generates a reply from a conversation chain.
@@ -57,7 +58,7 @@ export default async function generateReplyFromChain(params: {
     callbacks.push(new ConsoleCallbackHandler());
   }
 
-  const model = new OpenAI({
+  const model = new ChatOpenAI({
     temperature: 0,
     modelName: OPENAI_MODEL,
     callbacks,
@@ -117,16 +118,25 @@ async function getVectorStoreRetriever(
     process.env.CHATBOT_SIMILARITY_THRESHOLD ?? 0.8,
   );
 
-  const baseCompressor = new EmbeddingsFilter({
+  const embeddingsFilter = new EmbeddingsFilter({
     embeddings: new OpenAIEmbeddings(),
     k: maxDocuments,
     similarityThreshold,
   });
 
+  const textSplitter = new RecursiveCharacterTextSplitter({
+    chunkSize: 200,
+    chunkOverlap: 0,
+  });
+
+  const compressorPipeline = new DocumentCompressorPipeline({
+    transformers: [textSplitter, embeddingsFilter],
+  });
+
   const vectorStore = await getVectorStore(client);
 
   return new ContextualCompressionRetriever({
-    baseCompressor,
+    baseCompressor: compressorPipeline,
     baseRetriever: vectorStore.asRetriever({
       filter,
     }),
@@ -135,7 +145,7 @@ async function getVectorStoreRetriever(
 
 async function crateChain(params: {
   client: SupabaseClient<Database>;
-  model: OpenAI;
+  model: ChatOpenAI;
   questionPrompt: PromptTemplate;
   filter?: UnknownObject;
 }) {

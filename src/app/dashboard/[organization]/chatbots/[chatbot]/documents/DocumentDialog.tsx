@@ -11,6 +11,9 @@ import { getDocumentById } from '~/lib/chatbots/queries';
 import useSupabase from '~/core/hooks/use-supabase';
 import If from '~/core/ui/If';
 import Spinner from '~/core/ui/Spinner';
+import Alert from '~/core/ui/Alert';
+import Trans from '~/core/ui/Trans';
+
 import MarkdownRenderer from '~/core/ui/markdown/MarkdownRenderer';
 
 import {
@@ -20,12 +23,12 @@ import {
   DropdownMenuTrigger,
 } from '~/core/ui/Dropdown';
 
-import DeleteDocumentModal from '~/app/dashboard/[organization]/chatbots/[chatbot]/components/DeleteDocumentModal';
-import Alert from '~/core/ui/Alert';
+import DeleteDocumentModal from '../components/DeleteDocumentModal';
 
 function DocumentDialog() {
   const params = useSearchParams();
   const value = params.get('document');
+
   const [docId, setDocId] = useState(value);
   const router = useRouter();
   const pathName = usePathname();
@@ -62,8 +65,11 @@ function DocumentContent(props: {
   if (error) {
     return (
       <Alert type={'warn'}>
-        <Alert.Heading>This document does not exist.</Alert.Heading>
-        Sorry about that! This document may have been deleted.
+        <Alert.Heading>
+          <Trans i18nKey={'chatbot:documentNotFound'} />
+        </Alert.Heading>
+
+        <Trans i18nKey={'chatbot:documentNotFoundDescription'} />
       </Alert>
     );
   }
@@ -74,7 +80,9 @@ function DocumentContent(props: {
         <div className={'flex items-center space-x-4'}>
           <Spinner />
 
-          <span>Loading...</span>
+          <span>
+            <Trans i18nKey={'chatbot:loadingDocument'} />
+          </span>
         </div>
       </If>
 
@@ -95,7 +103,7 @@ function DocumentContent(props: {
                     documentId={doc.id}
                   >
                     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                      Delete
+                      <Trans i18nKey={'chatbot:deleteDocument'} />
                     </DropdownMenuItem>
                   </DeleteDocumentModal>
                 </DropdownMenuContent>

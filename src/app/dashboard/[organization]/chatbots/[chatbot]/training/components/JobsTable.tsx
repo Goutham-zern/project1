@@ -1,39 +1,14 @@
 'use client';
 
 import { ColumnDef, Row } from '@tanstack/react-table';
+import { useTranslation } from 'react-i18next';
 
 import { getJobs } from '~/lib/jobs/queries';
 import DataTable from '~/core/ui/DataTable';
 import Badge from '~/core/ui/Badge';
+import Trans from '~/core/ui/Trans';
 
 type Jobs = Awaited<ReturnType<typeof getJobs>>['data'];
-
-const columns: Array<ColumnDef<Jobs[0]>> = [
-  {
-    header: 'Created At',
-    id: 'createdAt',
-    cell: ({ row }) => {
-      return <DateRenderer row={row} accessorKey={'createdAt'} />;
-    }
-  },
-  {
-    header: 'Status',
-    id: 'status',
-    cell: ({ row }) => {
-      return <JobStatusBadge status={row.original.status} />;
-    },
-  },
-  {
-    header: 'Tasks Completed',
-    id: 'completedTasks',
-    accessorKey: 'tasksCompleted',
-  },
-  {
-    header: 'Tasks Total',
-    id: 'totalTasks',
-    accessorKey: 'tasksCount',
-  },
-];
 
 function JobsTable(props: {
   jobs: Jobs;
@@ -42,6 +17,7 @@ function JobsTable(props: {
   count: number;
 }) {
   const pageCount = Math.ceil(props.count / props.perPage);
+  const columns = useColumns();
 
   return (
     <div>
@@ -63,28 +39,21 @@ function JobStatusBadge({ status }: { status: Jobs[0]['status'] }) {
     case 'failed':
       return (
         <Badge className={'inline-flex'} size={'small'} color={'error'}>
-          Failed
+          <Trans i18nKey={'chatbot:jobFailed'} />
         </Badge>
       );
 
     case 'completed':
       return (
         <Badge className={'inline-flex'} size={'small'} color={'success'}>
-          Completed
-        </Badge>
-      );
-
-    case 'running':
-      return (
-        <Badge color={'info'} className={'inline-flex'} size={'small'}>
-          Running
+          <Trans i18nKey={'chatbot:jobCompleted'} />
         </Badge>
       );
 
     case 'pending':
       return (
         <Badge className={'inline-flex'} size={'small'}>
-          Pending
+          <Trans i18nKey={'chatbot:jobInProgress'} />
         </Badge>
       );
   }
@@ -106,4 +75,37 @@ function DateRenderer({
   }
 
   return <>-</>;
+}
+
+function useColumns() {
+  const { t } = useTranslation('chatbot');
+
+  const columns: Array<ColumnDef<Jobs[0]>> = [
+    {
+      header: t('createdAt'),
+      id: 'createdAt',
+      cell: ({ row }) => {
+        return <DateRenderer row={row} accessorKey={'createdAt'} />;
+      },
+    },
+    {
+      header: t('jobStatus'),
+      id: 'status',
+      cell: ({ row }) => {
+        return <JobStatusBadge status={row.original.status} />;
+      },
+    },
+    {
+      header: t('tasksCompleted'),
+      id: 'completedTasks',
+      accessorKey: 'tasksCompleted',
+    },
+    {
+      header: t('tasksTotal'),
+      id: 'totalTasks',
+      accessorKey: 'tasksCount',
+    },
+  ];
+
+  return columns;
 }

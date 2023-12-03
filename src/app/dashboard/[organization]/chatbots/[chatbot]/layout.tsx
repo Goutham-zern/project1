@@ -1,4 +1,4 @@
-import { PencilSquareIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
 import getSupabaseServerComponentClient from '~/core/supabase/server-component-client';
 
 import NavigationMenu from '~/core/ui/Navigation/NavigationMenu';
@@ -8,6 +8,7 @@ import { PageHeader } from '~/core/ui/Page';
 import configuration from '~/configuration';
 import Button from '~/core/ui/Button';
 import EditChatbotModal from '../components/EditChatbotModal';
+import Trans from '~/core/ui/Trans';
 
 async function ChatbotLayout(
   props: React.PropsWithChildren<{
@@ -37,12 +38,23 @@ async function ChatbotLayout(
   return (
     <div className={'flex flex-col h-full'}>
       <PageHeader title={chatbot.name} description={chatbot.description}>
-        <EditChatbotModal chatbot={chatbot}>
-          <Button size={'sm'} variant={'outline'}>
-            <PencilSquareIcon className={'h-4 mr-2'} />
-            <span>Edit</span>
+        <div className={'flex space-x-2'}>
+          <Button size={'sm'} variant={'ghost'} href={'../'}>
+            <ArrowLeftIcon className={'h-4 mr-2'} />
+            <span>
+              <Trans i18nKey={'chatbot:backToChatbotsButton'} />
+            </span>
           </Button>
-        </EditChatbotModal>
+
+          <EditChatbotModal chatbot={chatbot}>
+            <Button size={'sm'} variant={'outline'}>
+              <PencilSquareIcon className={'h-4 mr-2'} />
+              <span>
+                <Trans i18nKey={'chatbot:editChatbotTitle'} />
+              </span>
+            </Button>
+          </EditChatbotModal>
+        </div>
       </PageHeader>
 
       <div className={'px-container'}>
@@ -50,35 +62,35 @@ async function ChatbotLayout(
           <NavigationMenuItem
             link={{
               path: path('documents'),
-              label: 'Documents',
+              label: 'chatbot:documentsTab',
             }}
           />
 
           <NavigationMenuItem
             link={{
               path: path('training'),
-              label: 'Training',
+              label: 'chatbot:trainingTab',
             }}
           />
 
           <NavigationMenuItem
             link={{
               path: path('design'),
-              label: 'Design',
+              label: 'chatbot:designTab',
             }}
           />
 
           <NavigationMenuItem
             link={{
               path: path('playground'),
-              label: 'Playground',
+              label: 'chatbot:playgroundTab',
             }}
           />
 
           <NavigationMenuItem
             link={{
               path: path('publish'),
-              label: 'Publish',
+              label: 'chatbot:publishTab',
             }}
           />
         </NavigationMenu>

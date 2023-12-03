@@ -71,6 +71,24 @@ WIDGET_SETTINGS_ENDPOINT=https://myapp.com/api/chatbot
 Please make sure not to use the .env files for production keys (OPENAI and QSTASH). Instead, use the environment variables provided by your hosting provider.
 Locally, you can use the .env.local file - which is ignored by git and will not be pushed to the repository.
 
+#### Additional Configuration
+
+You can also change the following environment variables:
+
+```
+# The maximum number of documents returned by the retriever. Less results in faster response times.
+# The default is 2.
+CHATBOT_MAX_DOCUMENTS=2
+
+# The similarity threshold for the retriever.
+# The default is 0.8.
+CHATBOT_SIMILARITY_THRESHOLD=0.8
+
+# The OpenAI model to use for the Chatbot.
+# The default is gpt-3.5-turbo.
+OPENAI_MODEL=gpt-3.5-turbo
+```
+
 ### Building the Chatbot Widget
 
 To build the Chatbot Widget, run the following command:

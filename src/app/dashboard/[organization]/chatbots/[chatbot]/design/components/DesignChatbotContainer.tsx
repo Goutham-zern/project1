@@ -6,6 +6,7 @@ import { HexColorPicker } from 'react-colorful';
 import { useForm } from 'react-hook-form';
 import { useFormState, useFormStatus } from 'react-dom';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 import { TextFieldInput, TextFieldLabel } from '~/core/ui/TextField';
 import Button from '~/core/ui/Button';
@@ -22,8 +23,9 @@ import {
 
 import Label from '~/core/ui/Label';
 import chatbotMessagesStore from '~/components/chatbot/lib/chatbot-messages-store';
-import { saveChatbotSettingsAction } from '../../actions.server';
 import { ChatbotSettings } from '~/components/chatbot/lib/types';
+
+import { saveChatbotSettingsAction } from '../../actions.server';
 
 const ChatBot = dynamic(() => import('~/components/chatbot/ChatBot'), {
   ssr: false,
@@ -43,6 +45,8 @@ function DesignChatbotContainer(
     settings: ChatbotSettings;
   }>,
 ) {
+  const {t} = useTranslation('chatbot');
+
   const form = useForm({
     defaultValues: {
       title: props.settings.title || 'Acme AI Assistant',
@@ -80,14 +84,14 @@ function DesignChatbotContainer(
   useEffect(() => {
     if (formState) {
       if (formState.success) {
-        toast.success('Chatbot settings saved successfully');
+        toast.success(t('saveSettingsSuccessToast'));
       } else {
         toast.error(
-          'Sorry, we encountered an error while saving your settings',
+          t('saveSettingsErrorToast')
         );
       }
     }
-  }, [formState]);
+  }, [formState, t]);
 
   return (
     <>
@@ -102,7 +106,8 @@ function DesignChatbotContainer(
             <input type="hidden" value={props.chatbotId} name={'chatbotId'} />
 
             <TextFieldLabel>
-              Chatbot Title
+              {t('chatbotName')}
+
               <TextFieldInput
                 {...form.register('title', { required: true })}
                 required
@@ -112,7 +117,10 @@ function DesignChatbotContainer(
             </TextFieldLabel>
 
             <TextFieldLabel>
-              <span>Primary Color</span>
+              <span>
+                {t('chatbotPrimaryColor')}
+              </span>
+
               <ColorPicker
                 color={primaryColor}
                 setColor={(color) => form.setValue('primaryColor', color)}
@@ -120,7 +128,9 @@ function DesignChatbotContainer(
             </TextFieldLabel>
 
             <TextFieldLabel>
-              <span>Text Color</span>
+              <span>
+                {t('chatbotTextColor')}
+              </span>
 
               <ColorPicker
                 color={textColor}
@@ -129,7 +139,9 @@ function DesignChatbotContainer(
             </TextFieldLabel>
 
             <Label>
-              <span>Position</span>
+              <span>
+                {t('chatbotPosition')}
+              </span>
 
               <Select
                 value={position}
@@ -142,8 +154,13 @@ function DesignChatbotContainer(
                 </SelectTrigger>
 
                 <SelectContent>
-                  <SelectItem value={positions[0]}>Bottom Right</SelectItem>
-                  <SelectItem value={positions[1]}>Bottom Left</SelectItem>
+                  <SelectItem value={positions[0]}>
+                    {t('bottomRight')}
+                  </SelectItem>
+
+                  <SelectItem value={positions[1]}>
+                    {t('bottomLeft')}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </Label>
@@ -168,10 +185,11 @@ function DesignChatbotContainer(
 
 function SubmitButton() {
   const { pending } = useFormStatus();
+  const { t } = useTranslation('chatbot');
 
   return (
     <Button loading={pending} type={'submit'}>
-      {pending ? 'Saving...' : 'Save Changes'}
+      {pending ? t('savingSettingsButtonLabel') : t('saveChangesButton')}
     </Button>
   );
 }

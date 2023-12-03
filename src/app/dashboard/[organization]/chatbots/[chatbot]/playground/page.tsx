@@ -5,6 +5,8 @@ import Heading from '~/core/ui/Heading';
 import { getChatbot } from '~/lib/chatbots/queries';
 import getSupabaseServerComponentClient from '~/core/supabase/server-component-client';
 import { ChatbotSettings } from '~/components/chatbot/lib/types';
+import { withI18n } from '~/i18n/with-i18n';
+import Trans from '~/core/ui/Trans';
 
 const ChatBot = dynamic(() => import('~/components/chatbot/ChatBot'), {
   ssr: false,
@@ -19,6 +21,10 @@ interface ChatbotPlaygroundPageParams {
 
 const LOCAL_STORAGE_KEY = 'chatbot-playground';
 
+export const metadata = {
+  title: 'Playground',
+};
+
 async function ChatbotPlaygroundPage({ params }: ChatbotPlaygroundPageParams) {
   const client = getSupabaseServerComponentClient();
   const chatbot = await getChatbot(client, params.chatbot);
@@ -27,11 +33,12 @@ async function ChatbotPlaygroundPage({ params }: ChatbotPlaygroundPageParams) {
   return (
     <>
       <PageBody className={'py-container space-y-2'}>
-        <Heading type={4}>Playground</Heading>
+        <Heading type={4}>
+          <Trans i18nKey={'chatbot:playgroundTab'} />
+        </Heading>
 
         <p className={'text-sm text-gray-500 dark:text-gray-400'}>
-          Play around with your chatbot here and see how it responds to
-          different inputs.
+          <Trans i18nKey={'chatbot:playgroundTabSubheading'} />
         </p>
       </PageBody>
 
@@ -46,4 +53,4 @@ async function ChatbotPlaygroundPage({ params }: ChatbotPlaygroundPageParams) {
   );
 }
 
-export default ChatbotPlaygroundPage;
+export default withI18n(ChatbotPlaygroundPage);
