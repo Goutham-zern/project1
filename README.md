@@ -91,7 +91,7 @@ OPENAI_MODEL=gpt-3.5-turbo
 
 ### Building the Chatbot Widget
 
-To build the Chatbot Widget, run the following command:
+To build the Chatbot Widget during development, run the following command:
 
 ```
 npm run build:widget
@@ -99,9 +99,18 @@ npm run build:widget
 
 This will create a `makerkit-chatbot.js` file in the `dist` folder.
 
+To create a production build, run:
+
+```
+npm run build:widget:production
+```
+
+You can make this command part of your CI/CD pipeline to deploy the Chatbot Widget to a CDN.
+
 #### Environment Variables
 
-You need to update the file `packages/widget/.env` to update the environment variables for the Chatbot Widget.
+You need to update the file `packages/widget/.env` to update the environment variables for the Chatbot Widget. The production environment variables are instead in the file `.env.production`.
+
 
 ### Deploying the Chatbot Widget
 

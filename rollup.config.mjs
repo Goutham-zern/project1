@@ -1,3 +1,5 @@
+import { parseArgs } from "node:util";
+
 import nodeResolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import babel from '@rollup/plugin-babel';
@@ -12,10 +14,38 @@ import nodePolyfills from 'rollup-plugin-polyfill-node';
 
 import { config } from 'dotenv';
 
+const args = parseArgs({
+  options: {
+    environment: {
+      type: "string",
+      short: "e",
+      default: "development",
+    },
+    configuration: {
+      type: "string",
+      short: "c",
+    },
+  }
+});
+
+const env = args.values.environment;
+const production = env === 'production';
+let environmentVariablesPath = './packages/widget/.env';
+
+console.log(`Building widget for ${env} environment...`);
+
+if (production) {
+  environmentVariablesPath += '.production';
+}
+
+const ENV_VARIABLES = config({
+  path: environmentVariablesPath
+}).parsed
+
 export default {
   input: 'packages/widget/Chatbot.tsx',
   output: {
-    file: 'dist/makerkit-chatbot.js',
+    file: `dist/${ENV_VARIABLES.CHATBOT_SDK_NAME}`,
     format: 'iife',
     sourcemap: false,
     inlineDynamicImports: true,
@@ -59,9 +89,7 @@ export default {
     nodePolyfills({
       exclude: ['crypto']
     }),
-    injectProcessEnv(config({
-      path: './packages/widget/.env'
-    }).parsed),
+    injectProcessEnv(ENV_VARIABLES),
     terser({
       ecma: 2020,
       mangle: { toplevel: true },
