@@ -38,6 +38,7 @@
   "yourOrganizations": "Your Organizations",
   "continue": "Continue",
   "skip": "Skip",
+  "goBack": "Go Back",
   "roles": {
     "owner": {
       "label": "Owner",

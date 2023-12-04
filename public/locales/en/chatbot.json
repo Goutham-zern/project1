@@ -23,7 +23,7 @@
   "websiteAnalysisError": "Failed to analyze website. Please try again.",
   "confirmWebsiteStepDescription": "Let's crawl your website to train your chatbot with your existing content. We will analyze your website and create a list of questions and answers for your chatbot.",
   "websiteAnalysisResultHeading": "We found a sitemap for <code className={'text-xs'}>{{url}}</code>",
-  "websiteAnalysisResult": "The sitemap contains a total of <strong>{{totalNumberOfPages}}</strong> pages. We found <strong>{{numberOfFilteredPages}}</strong> after applying the filters. Do you want to start crawling?",
+  "websiteAnalysisResultDescription": "The sitemap contains a total of <strong>{{totalNumberOfPages}}</strong> pages. We found <strong>{{numberOfFilteredPages}}</strong> after applying the filters. Do you want to start crawling?",
   "startCrawlingButton": "Yes, Start Crawling",
   "allowUrlsLabel": "Allow URLs",
   "allowUrlsDescription": "Allow URLs that you want to include in your chatbot. Leave this empty to include all URLs. For example, if you only want to include all URLs that start with \"/blog\", you can add \"/blog/\" to the allow list.",

@@ -5,6 +5,7 @@ import useMutation from 'swr/mutation';
 import { Control, useFieldArray, useForm } from 'react-hook-form';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 import Button from '~/core/ui/Button';
 import Label from '~/core/ui/Label';
@@ -19,25 +20,25 @@ import TextField from '~/core/ui/TextField';
 
 import { createChatbotCrawlingJob, getSitemapLinks } from '../actions.server';
 import useSupabase from '~/core/hooks/use-supabase';
-import useCurrentOrganization from '~/lib/organizations/hooks/use-current-organization';
 import SideDialog from '~/core/ui/SideDialog';
 import { DialogTitle } from '~/core/ui/Dialog';
 import Trans from '~/core/ui/Trans';
-import { useTranslation } from 'react-i18next';
+
+import useCurrentOrganization from '~/lib/organizations/hooks/use-current-organization';
 
 const initialFormValues = {
   currentStep: 0,
   filters: {
     allow: [{ value: '' }],
-    disallow: [{ value: '' }],
-  },
+    disallow: [{ value: '' }]
+  }
 };
 
 function CrawlWebsiteModal(
   props: React.PropsWithChildren<{
     url: string;
     chatbotId: string;
-  }>,
+  }>
 ) {
   return (
     <SideDialog Trigger={props.children}>
@@ -56,11 +57,11 @@ function ModalForm(
   props: React.PropsWithChildren<{
     url: string;
     chatbotId: string;
-  }>,
+  }>
 ) {
   const form = useForm({
     defaultValues: initialFormValues,
-    mode: 'onChange',
+    mode: 'onChange'
   });
 
   const { t } = useTranslation('chatbot');
@@ -68,7 +69,7 @@ function ModalForm(
   const steps = [
     'chatbot:websiteStepTitle',
     'chatbot:analyzeStepTitle',
-    'chatbot:finishStepTitle',
+    'chatbot:finishStepTitle'
   ];
 
   const crawlingJobMutation = useStartCrawlingJob();
@@ -82,7 +83,7 @@ function ModalForm(
 
     return {
       allow,
-      disallow,
+      disallow
     };
   };
 
@@ -95,13 +96,13 @@ function ModalForm(
   const onStartCrawling = async () => {
     const promise = crawlingJobMutation.trigger({
       chatbotId: props.chatbotId,
-      filters: getFilters(),
+      filters: getFilters()
     });
 
     toast.promise(promise, {
       success: t('crawlingStarted'),
       loading: t('crawlingStarting'),
-      error: t('crawlingFailed'),
+      error: t('crawlingFailed')
     });
   };
 
@@ -136,7 +137,7 @@ function ConfirmWebsiteStep(
     url: string;
     control: Control<typeof initialFormValues>;
     onNext: () => unknown;
-  }>,
+  }>
 ) {
   return (
     <div className={'flex flex-col space-y-4 animate-in fade-in'}>
@@ -182,12 +183,14 @@ function AnalyzeWebsiteSitemapStep(
 
     onBack: () => unknown;
     onNext: () => unknown;
-  }>,
+  }>
 ) {
+  const { t } = useTranslation('chatbot');
+
   const { isLoading, data, error } = useSitemapLinks(
     props.chatbotId,
     props.url,
-    props.filters,
+    props.filters
   );
 
   const organizationId = useCurrentOrganization()?.id;
@@ -197,7 +200,7 @@ function AnalyzeWebsiteSitemapStep(
 
   const canCreateCrawlingJobQuery = useCanCreateCrawlingJob(
     organizationId,
-    numberOfFilteredPages,
+    numberOfFilteredPages
   );
 
   if (props.isCreatingJob) {
@@ -251,26 +254,21 @@ function AnalyzeWebsiteSitemapStep(
       <div className={'flex flex-col space-y-2'}>
         <p
           dangerouslySetInnerHTML={{
-            __html: (
-              <Trans
-                i18nKey={'chatbot:websiteAnalysisResultHeading'}
-                values={{ url: props.url }}
-              />
-            ),
+            __html: (t(`websiteAnalysisResultHeading`, {
+                url: props.url
+              })
+            )
           }}
         />
 
         <p
           dangerouslySetInnerHTML={{
             __html: (
-              <Trans
-                i18nKey={'chatbot:websiteAnalysisResult'}
-                values={{
-                  totalNumberOfPages,
-                  numberOfFilteredPages,
-                }}
-              />
-            ),
+              t(`websiteAnalysisResultDescription`, {
+                totalNumberOfPages,
+                numberOfFilteredPages
+              })
+            )
           }}
         />
       </div>
@@ -307,16 +305,16 @@ function AnalyzeWebsiteSitemapStep(
 function CrawlingFiltersForm(
   props: React.PropsWithChildren<{
     control: Control<typeof initialFormValues>;
-  }>,
+  }>
 ) {
   const allowList = useFieldArray({
     control: props.control,
-    name: 'filters.allow',
+    name: 'filters.allow'
   });
 
   const disallowList = useFieldArray({
     control: props.control,
-    name: 'filters.disallow',
+    name: 'filters.disallow'
   });
 
   return (
@@ -438,7 +436,7 @@ function WarnCannotCreateJobAlert() {
 
 function useCanCreateCrawlingJob(
   organizationId: number | undefined,
-  requestedDocuments: number,
+  requestedDocuments: number
 ) {
   const supabase = useSupabase();
 
@@ -449,7 +447,7 @@ function useCanCreateCrawlingJob(
 
     const { data, error } = await supabase.rpc('can_index_documents', {
       requested_documents: requestedDocuments,
-      org_id: organizationId,
+      org_id: organizationId
     });
 
     if (error) {
@@ -483,7 +481,7 @@ function useSitemapLinks(
   filters: {
     allow: string[];
     disallow: string[];
-  },
+  }
 ) {
   const csrfToken = useCsrfToken();
   const key = ['sitemap-links', chatbotId, url, JSON.stringify(filters)];
