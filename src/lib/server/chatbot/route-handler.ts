@@ -4,12 +4,13 @@ import { StreamingTextResponse } from 'ai';
 import { z } from 'zod';
 import { SupabaseClient } from '@supabase/supabase-js';
 
+import { getConversationIdHeaderName } from '~/lib/chatbots/conversion-cookie-name';
+
 import generateReplyFromChain, { insertConversationMessages } from './langchain';
 import getSupabaseRouteHandlerClient from '~/core/supabase/route-handler-client';
 import getVectorStore from '~/lib/server/chatbot/vector-store';
 import { Database } from '~/database.types';
 import { CHATBOTS_TABLE } from '~/lib/db-tables';
-import { getConversationIdHeaderName } from '~/lib/chatbots/conversion-cookie-name';
 import { insertConversation } from '~/lib/chatbots/mutations';
 import getLogger from '~/core/logger';
 import configuration from '~/configuration';
@@ -24,6 +25,9 @@ let USE_FAKE_DATA_STREAMER = false;
 if (isProduction) {
   USE_FAKE_DATA_STREAMER = false;
 }
+
+// simple short-lived cache for site names
+const siteNameCache = new Map<string, string>();
 
 /**
  * Handles a chat bot request. This function should be exported from a
@@ -103,10 +107,6 @@ export function handleChatBotRequest({ responseHeaders }: {
       chatbot: chatbotId,
     });
 
-    const filter = {
-      chatbot_id: chatbotId,
-    };
-
     // if it's the first message we insert a new conversation
     if (conversationReferenceId) {
       if (messages.length <= 2) {
@@ -135,52 +135,93 @@ export function handleChatBotRequest({ responseHeaders }: {
       }
     }
 
-    // if the Organization can't generate an AI response, we use a normal search
-    if (!canGenerateAIResponse.data) {
-      const latestMessage = messages[messages.length - 1];
+    // this is the user's latest message - eg. the message we want to respond to
+    const latestMessage = messages[messages.length - 1];
 
-      // in this case, use a normal search function
-      const { text, stream } = await searchDocuments({
+    const returnFallbackReply = () => {
+      return fallbackSearchDocuments({
         client,
         query: latestMessage.content,
-        filter,
+        chatbotId,
+        conversationReferenceId,
       });
+    };
 
-      if (conversationReferenceId) {
-        await insertConversationMessages({
-          client,
-          chatbotId,
-          conversationReferenceId,
-          text,
-          previousMessage: latestMessage.content,
-        });
-      }
-
-      return new StreamingTextResponse(stream);
+    // if the Organization can't generate an AI response, we use a normal search
+    if (!canGenerateAIResponse.data) {
+      return returnFallbackReply();
     }
 
-    const siteName = await getChatbotSiteName(client, chatbotId);
+    try {
+      const siteName = await getChatbotSiteName(client, chatbotId);
 
-    const stream = await generateReplyFromChain({
-      client,
-      messages,
-      chatbotId,
-      siteName,
-      conversationReferenceId,
-    });
+      const stream = await generateReplyFromChain({
+        client,
+        messages,
+        chatbotId,
+        siteName,
+        conversationReferenceId,
+      });
 
-    logger.info({
-      conversationReferenceId,
-      chatbotId,
-    }, `Stream generated. Sending response...`);
+      // if the AI can generate a response, we return a streaming response
+      logger.info({
+        conversationReferenceId,
+        chatbotId,
+      }, `Stream generated. Sending response...`);
 
-    return new StreamingTextResponse(stream, {
-      headers: responseHeaders,
-    });
+      return new StreamingTextResponse(stream, {
+        headers: responseHeaders,
+      });
+    } catch (error) {
+      // if there's an error generating the response
+      // we fallback to a normal search
+
+      logger.warn({
+        conversationReferenceId,
+        chatbotId,
+        error,
+      }, `Error generating response. Falling back to search.`);
+
+      return returnFallbackReply();
+    }
   };
 }
 
 export default handleChatBotRequest;
+
+/**
+ * Fallback search documents when the AI can't generate a response or
+ * when the user has exhausted the number of messages in their plan
+ */
+async function fallbackSearchDocuments(params: {
+  client: ReturnType<typeof getSupabaseRouteHandlerClient>;
+  query: string;
+  chatbotId: string;
+  conversationReferenceId?: string;
+}) {
+  const { client, query, chatbotId, conversationReferenceId } = params;
+
+  // in this case, use a normal search function
+  const { text, stream } = await searchDocuments({
+    client,
+    query,
+    filter: {
+      chatbot_id: chatbotId,
+    },
+  });
+
+  if (conversationReferenceId) {
+    await insertConversationMessages({
+      client,
+      chatbotId,
+      conversationReferenceId,
+      text,
+      previousMessage: query,
+    });
+  }
+
+  return new StreamingTextResponse(stream);
+}
 
 async function searchDocuments(params: {
   client: ReturnType<typeof getSupabaseRouteHandlerClient>;
@@ -252,17 +293,23 @@ function fakeDataStreamer() {
   return new Response(stream);
 }
 
+/**
+ * Gets the site name for a chatbot
+ * Stores the site name in a cache for faster access when hitting the same instance.
+ * @param client
+ * @param chatbotId
+ */
 async function getChatbotSiteName(
   client: SupabaseClient<Database>,
   chatbotId: string,
 ) {
+  if (siteNameCache.get(chatbotId)) {
+    return siteNameCache.get(chatbotId) as string;
+  }
+
   const response = await client
     .from(CHATBOTS_TABLE)
-    .select(
-      `
-    site_name
-  `,
-    )
+    .select(`site_name`)
     .eq('id', chatbotId)
     .single();
 
@@ -270,5 +317,9 @@ async function getChatbotSiteName(
     throw response.error;
   }
 
-  return response.data.site_name;
+  const siteName = response.data.site_name;
+
+  siteNameCache.set(chatbotId, siteName);
+
+  return siteName;
 }
