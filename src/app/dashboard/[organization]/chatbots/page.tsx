@@ -63,15 +63,21 @@ function EmptyState() {
         }
       >
         <div className={'flex flex-col space-y-2'}>
-          <Heading>Let&apos;s create your first Chatbot</Heading>
+          <Heading>
+            <Trans i18nKey={'chatbot:chatbotsEmptyStateHeading'} />
+          </Heading>
 
-          <SubHeading>Start offloading your customer support to AI</SubHeading>
+          <SubHeading>
+            <Trans i18nKey={'chatbot:chatbotsEmptyStateSubheading'} />
+          </SubHeading>
         </div>
 
         <CreateChatbotModal canCreateChatbot={true}>
           <Button block size={'lg'}>
             <PlusCircleIcon className={'h-6 mr-4'} />
-            <span>Create your first Chatbot</span>
+            <span>
+              <Trans i18nKey={'chatbot:chatbotsEmptyStateButton'} />
+            </span>
           </Button>
         </CreateChatbotModal>
       </div>
@@ -89,7 +95,7 @@ function ChatbotsList(
   if (error) {
     return (
       <Alert type={'error'}>
-        Sorry, we encountered an error while fetching your boards
+        <Trans i18nKey={'chatbot:chatbotsPageAlertError'} />
       </Alert>
     );
   }

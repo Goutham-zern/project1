@@ -439,8 +439,9 @@ function useCanCreateCrawlingJob(
   requestedDocuments: number
 ) {
   const supabase = useSupabase();
+  const key = ['can-create-crawling-job', requestedDocuments, organizationId];
 
-  return useQuery(['can-create-crawling-job', organizationId], async () => {
+  return useQuery(key, async () => {
     if (!organizationId) {
       return false;
     }

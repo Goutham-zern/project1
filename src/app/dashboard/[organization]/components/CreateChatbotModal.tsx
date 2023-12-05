@@ -13,6 +13,7 @@ import { Alert, AlertHeading } from '~/core/ui/Alert';
 import If from '~/core/ui/If';
 import Button from '~/core/ui/Button';
 import { insertChatbot } from '~/lib/chatbots/mutations';
+import Trans from '~/core/ui/Trans';
 
 function CreateChatbotModal(
   props: React.PropsWithChildren<{
@@ -20,7 +21,9 @@ function CreateChatbotModal(
   }>,
 ) {
   return (
-    <Modal Trigger={props.children} heading={`Create Chatbot`}>
+    <Modal Trigger={props.children} heading={
+      <Trans i18nKey={'chatbot:createChatbotModalHeading'} />
+    }>
       <If
         condition={props.canCreateChatbot}
         fallback={<CannotCreateChatbotAlert />}
@@ -41,12 +44,13 @@ function CreateChatbotForm() {
       <div className={'flex flex-col space-y-4'}>
         <div>
           <p className={'text-sm text-gray-500'}>
-            Get started by creating a new Chatbot for your website.
+            <Trans i18nKey={'chatbot:createChatbotModalSubheading'} />
           </p>
         </div>
 
         <TextFieldLabel>
-          Chatbot Name
+          <Trans i18nKey={'chatbot:chatbotName'} />
+
           <TextFieldInput
             name={'name'}
             required
@@ -55,7 +59,8 @@ function CreateChatbotForm() {
         </TextFieldLabel>
 
         <TextFieldLabel>
-          Chatbot Website Name
+          <Trans i18nKey={'chatbot:chatbotWebsiteName'} />
+
           <TextFieldInput
             name={'siteName'}
             required
@@ -63,22 +68,22 @@ function CreateChatbotForm() {
           />
 
           <TextFieldHint>
-            This is the name of your website you want the Chatbot to chat on behalf of. Ex. Supabase
+            <Trans i18nKey={'chatbot:chatbotWebsiteNameHint'} />
           </TextFieldHint>
         </TextFieldLabel>
 
         <TextFieldLabel>
-          Website URL
+          <Trans i18nKey={'chatbot:chatbotWebsiteUrl'} />
           <TextFieldInput name={'url'} placeholder={'https://...'} type={'url'} defaultValue={'https://'} />
         </TextFieldLabel>
 
         <TextFieldLabel>
-          Description (optional)
+          <Trans i18nKey={'chatbot:chatbotDescription'} />
           <Textarea name={'description'} placeholder={'Description...'} />
         </TextFieldLabel>
 
         <Button>
-          Create Chatbot
+          <Trans i18nKey={'chatbot:createChatbotSubmitButton'} />
         </Button>
       </div>
     </form>
@@ -88,8 +93,11 @@ function CreateChatbotForm() {
 function ChatbotErrorAlert() {
   return (
     <Alert type={'error'}>
-      <AlertHeading>Failed to create chatbot</AlertHeading>
-      Sorry, we were unable to create your chatbot. Please try again later.
+      <AlertHeading>
+        <Trans i18nKey={'chatbot:createChatbotAlertError'} />
+      </AlertHeading>
+
+      <Trans i18nKey={'chatbot:createChatbotAlertErrorDescription'} />
     </Alert>
   );
 }
@@ -97,8 +105,11 @@ function ChatbotErrorAlert() {
 function CannotCreateChatbotAlert() {
   return (
     <Alert type={'warn'}>
-      <AlertHeading>Cannot create Chatbot</AlertHeading>
-      You need to update your subscription to create more chatbots.
+      <AlertHeading>
+        <Trans i18nKey={'chatbot:cannotCreateChatbot'} />
+      </AlertHeading>
+
+      <Trans i18nKey={'chatbot:cannotCreateChatbotDescription'} />
     </Alert>
   );
 }
