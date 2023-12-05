@@ -79,7 +79,7 @@ function getColumns(t: TFunction<'chatbot'>): ColumnDef<Data['data'][0]>[] {
     },
     {
       id: 'createdAt',
-      header: t('documentCreatedAt'),
+      header: t('createdAt'),
       cell: ({ row }) => {
         const value = row.original.createdAt;
 
