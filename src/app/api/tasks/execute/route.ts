@@ -145,6 +145,8 @@ async function handler(req: NextRequest) {
   const successfulTasks = tasks.filter((task) => task.success);
   const erroredTasks = tasks.length - successfulTasks.length;
 
+  const processedTasks = successfulTasks.length + erroredTasks;
+
   logger.info({
     successfulTasks,
     erroredTasks,
@@ -163,10 +165,10 @@ async function handler(req: NextRequest) {
     });
   }
 
-  const completedTasksCount = job.tasksCompleted + tasks.length;
+  const completedTasksCount = job.tasksCompleted + processedTasks;
   const successfulTasksCount = job.tasksSucceeded + successfulTasks.length;
 
-  const isStatusFinished = completedTasksCount === job.tasksCount;
+  const isStatusFinished = completedTasksCount >= job.tasksCount;
   const status = isStatusFinished ? 'completed' : job.status;
 
   const updateResponse = await updateJob(supabase, body.jobId, {

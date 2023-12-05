@@ -60,7 +60,7 @@ export default DocumentsTable;
 
 function useGetColumns() {
   const { t } = useTranslation('chatbot');
-  return useMemo(() => getColumns(t), []);
+  return useMemo(() => getColumns(t), [t]);
 }
 
 function getColumns(t: TFunction<'chatbot'>): ColumnDef<Data['data'][0]>[] {
