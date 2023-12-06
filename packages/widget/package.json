@@ -8,12 +8,10 @@
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.5",
     "@rollup/plugin-terser": "latest",
-    "@vitejs/plugin-react": "^4.2.0",
     "dotenv": "^16.3.1",
     "rollup-plugin-inject-process-env": "latest",
     "rollup-plugin-polyfill-node": "^0.13.0",
     "rollup-plugin-postcss": "latest",
-    "rollup-plugin-visualizer": "latest",
-    "vite": "^5.0.2"
+    "rollup-plugin-visualizer": "latest"
   }
 }
