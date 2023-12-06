@@ -65,9 +65,13 @@ export async function updateChatbotSettings(
 }
 
 export async function deleteChatbot(client: Client, chatbotId: string) {
-  return client.from(CHATBOTS_TABLE).delete().match({
-    id: chatbotId,
+  const deleteChatbotPromise = client.from(CHATBOTS_TABLE).delete().match({
+    id: chatbotId
   });
+
+  const deleteDocumentsPromise = client.from(DOCUMENTS_TABLE).delete().eq('metadata -> chatbot_id:uuid', `"${chatbotId}"`);
+
+  return Promise.all([deleteChatbotPromise, deleteDocumentsPromise]);
 }
 
 export async function deleteDocument(client: Client, documentId: number) {

@@ -23,13 +23,13 @@ export async function deleteChatbotAction(data: FormData) {
     `Deleting chatbot...`,
   );
 
-  const { error } = await deleteChatbot(client, chatbotId);
+  const results = await deleteChatbot(client, chatbotId);
 
-  if (error) {
+  if (results[0].error) {
     logger.error(
       {
         chatbotId,
-        error,
+        error: results[0].error
       },
       `Failed to delete chatbot.`,
     );
@@ -43,6 +43,13 @@ export async function deleteChatbotAction(data: FormData) {
     },
     `Chatbot deleted successfully.`,
   );
+
+  if (results[1].error) {
+    logger.error({
+      chatbotId,
+      error: results[1].error
+    }, `Failed to delete documents.`);
+  }
 
   revalidatePath(`/dashboard/[organization]/chatbots`, `page`);
   revalidatePath(`/dashboard/[organization]/chatbots/[chatbot]`, `layout`);
