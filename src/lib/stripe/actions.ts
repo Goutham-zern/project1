@@ -26,6 +26,7 @@ import createBillingPortalSession from '~/lib/stripe/create-billing-portal-sessi
 import verifyCsrfToken from '~/core/verify-csrf-token';
 import { withSession } from '~/core/generic/actions-utils';
 import getSupabaseServerActionClient from '~/core/supabase/action-client';
+import { revalidatePath } from 'next/cache';
 
 export const createCheckoutAction = withSession(
   async (_, formData: FormData) => {
@@ -162,10 +163,19 @@ export const createCheckoutAction = withSession(
       return redirectToErrorPage();
     }
 
+    // revalidate the subscription page to update the UI
+    revalidateSubscriptionPage(organizationUid);
+
     // redirect user back based on the response
     return redirect(session.url, RedirectType.replace);
   },
 );
+
+function revalidateSubscriptionPage(organizationUid: string) {
+  const path = [configuration.paths.appHome, organizationUid, 'settings/subscription'].join('/')
+
+  revalidatePath(path, 'page');
+}
 
 /**
  * @name getUserCanAccessCheckout

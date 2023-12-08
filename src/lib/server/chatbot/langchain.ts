@@ -29,7 +29,7 @@ const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-3.5-turbo';
  * @param {Array<Object>} params.messages - An array of messages in the conversation.
  * Each message contains a role ('assistant' or 'user') and content (string).
  *
- * */
+ **/
 export default async function generateReplyFromChain(params: {
   client: SupabaseClient<Database>;
 
