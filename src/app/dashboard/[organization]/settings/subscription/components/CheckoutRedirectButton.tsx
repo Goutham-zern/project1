@@ -8,7 +8,6 @@ import classNames from 'clsx';
 
 import Button from '~/core/ui/Button';
 import isBrowser from '~/core/generic/is-browser';
-import useCsrfToken from '~/core/hooks/use-csrf-token';
 import { createCheckoutAction } from '~/lib/stripe/actions';
 
 const CheckoutRedirectButton: React.FCC<{
@@ -81,8 +80,6 @@ function CheckoutFormData(
     priceId: Maybe<string>;
   }>,
 ) {
-  const csrfToken = useCsrfToken();
-
   return (
     <>
       <input
@@ -91,7 +88,6 @@ function CheckoutFormData(
         defaultValue={props.organizationUid}
       />
 
-      <input type="hidden" name={'csrfToken'} defaultValue={csrfToken} />
       <input type="hidden" name={'returnUrl'} defaultValue={getReturnUrl()} />
       <input type="hidden" name={'priceId'} defaultValue={props.priceId} />
     </>

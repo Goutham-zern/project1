@@ -149,14 +149,14 @@ begin
 
     select price_id from get_active_subscription(org_id) into stripe_price_id;
 
-    /* If no subscription is found, then the user is on the free plan */
+    -- If no subscription is found, then the user is on the free plan
     if stripe_price_id is null then
         return chatbot_count < 1;
     end if;
 
     select max_chatbots into quota from plans where plans.price_id = stripe_price_id;
 
-    return max_chatbots < quota;
+    return chatbot_count < quota;
 end; $$
 language plpgsql;
 

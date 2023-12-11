@@ -23,7 +23,6 @@ import {
 
 import configuration from '~/configuration';
 import createBillingPortalSession from '~/lib/stripe/create-billing-portal-session';
-import verifyCsrfToken from '~/core/verify-csrf-token';
 import { withSession } from '~/core/generic/actions-utils';
 import getSupabaseServerActionClient from '~/core/supabase/action-client';
 import { revalidatePath } from 'next/cache';
@@ -50,10 +49,7 @@ export const createCheckoutAction = withSession(
       return redirectToErrorPage(`Invalid request body`);
     }
 
-    const { organizationUid, priceId, returnUrl, csrfToken } = bodyResult.data;
-
-    // check CSRF token is valid
-    await verifyCsrfToken(csrfToken);
+    const { organizationUid, priceId, returnUrl } = bodyResult.data;
 
     // create the Supabase client
     const client = getSupabaseServerActionClient();
@@ -216,9 +212,7 @@ export const createBillingPortalSessionAction = withSession(
       return redirectToErrorPage(referrerPath);
     }
 
-    const { customerId, csrfToken } = bodyResult.data;
-
-    await verifyCsrfToken(csrfToken);
+    const { customerId } = bodyResult.data;
 
     const client = getSupabaseServerActionClient();
     const logger = getLogger();
@@ -310,13 +304,11 @@ async function getUserCanAccessCustomerPortal(
 function getBillingPortalBodySchema() {
   return z.object({
     customerId: z.string().min(1),
-    csrfToken: z.string().min(1),
   });
 }
 
 function getCheckoutBodySchema() {
   return z.object({
-    csrfToken: z.string().min(1),
     organizationUid: z.string().uuid(),
     priceId: z.string().min(1),
     returnUrl: z.string().min(1),

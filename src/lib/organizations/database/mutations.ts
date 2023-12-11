@@ -23,7 +23,7 @@ export async function updateOrganization(
   params: {
     id: number;
     data: Partial<Organization>;
-  }
+  },
 ) {
   const payload: Omit<Partial<OrganizationRow>, 'id'> = {
     name: params.data.name,
@@ -33,14 +33,16 @@ export async function updateOrganization(
     payload.logo_url = params.data.logoURL;
   }
 
-  const { data } = await client
+  const { data, error } = await client
     .from(ORGANIZATIONS_TABLE)
     .update(payload)
-    .match({ id: params.id })
-    .throwOnError()
-    .select<string, Organization>('*')
-    .throwOnError()
+    .eq('id', params.id)
+    .select('id, name')
     .single();
+
+  if (error) {
+    throw error;
+  }
 
   return data;
 }
@@ -55,13 +57,13 @@ export async function setOrganizationSubscriptionData(
     organizationUid: string;
     customerId: string;
     subscriptionId: string;
-  }
+  },
 ) {
   const { customerId, organizationUid, subscriptionId } = props;
 
   const { data: organization, error } = await getOrganizationByUid(
     client,
-    organizationUid
+    organizationUid,
   );
 
   if (error || !organization) {
@@ -80,7 +82,7 @@ export async function setOrganizationSubscriptionData(
       },
       {
         onConflict: 'customer_id',
-      }
+      },
     )
     .match({ customer_id: customerId })
     .throwOnError();
