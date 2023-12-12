@@ -320,4 +320,7 @@ create policy "Users can delete documents in their Organization"
 create policy "Users can read plans"
   on plans
   for select
-  to authenticated;
+  to authenticated
+    using (
+        true
+    );
