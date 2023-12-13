@@ -14,6 +14,9 @@ export async function getChatbots(client: Client, organizationId: number) {
       description,
       createdAt: created_at
     `,
+      {
+        count: 'exact',
+      }
     )
     .eq('organization_id', organizationId);
 }
