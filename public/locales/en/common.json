@@ -40,6 +40,7 @@
   "skip": "Skip",
   "signedInAs": "Signed in as",
   "goBack": "Go Back",
+  "pageOfPages": "Page {{page}} of {{total}}",
   "roles": {
     "owner": {
       "label": "Owner",
