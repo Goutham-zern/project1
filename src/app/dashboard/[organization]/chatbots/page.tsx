@@ -137,7 +137,13 @@ async function loadChatbots(uid: string) {
       org_id: organization,
     })
     .then((response) => {
-      return response.data ?? false;
+      if (response.error) {
+        console.error(response.error);
+
+        return false;
+      }
+
+      return response.data;
     });
 
   const chatbots = getChatbots(client, organization);
