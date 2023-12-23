@@ -144,7 +144,7 @@ export default class ChatbotTaskQueue {
     const requests = jobsGroups.map((jobSites, index) => {
       const delay = index * ChatbotTaskQueue.DELAY_BETWEEN_JOBS_MS;
 
-      return this.queue.create({
+      return () => this.queue.create({
         chatbotId: params.chatbotId,
         jobId: job.data.id,
         delay,

@@ -76,64 +76,66 @@ async function handler(req: NextRequest) {
     links: body.links.length,
   }, `Crawling links...`);
 
-  const requests = body.links.map(async (url) => {
-    async function fetchPage() {
-      try {
-        const host = new URL(url).origin;
-        const contents = await crawler.crawl(url);
+  const requests = body.links.map((url) => {
+    return async () => {
+      async function fetchPage() {
+        try {
+          const host = new URL(url).origin;
+          const contents = await crawler.crawl(url);
 
-        return parser.parse(contents, host);
-      } catch (e) {
-        getLogger().warn({
-          url,
-          error: e,
-          jobId: body.jobId,
-        }, `Error crawling URL`);
+          return parser.parse(contents, host);
+        } catch (e) {
+          getLogger().warn({
+            url,
+            error: e,
+            jobId: body.jobId,
+          }, `Error crawling URL`);
 
-        throw e;
+          throw e;
+        }
       }
-    }
 
-    try {
-      const { content, title } = await fetchPage();
-      const hash = sha256(content);
+      try {
+        const { content, title } = await fetchPage();
+        const hash = sha256(content);
 
-      // we try avoid indexing the embedding twice
-      // by looking the same hash in the DB
-      const existingDocument = await getDocumentByHash(supabase, {
-        hash,
-        chatbotId: body.chatbotId
-      });
+        // we try avoid indexing the embedding twice
+        // by looking the same hash in the DB
+        const existingDocument = await getDocumentByHash(supabase, {
+          hash,
+          chatbotId: body.chatbotId
+        });
 
-      if (existingDocument) {
+        if (existingDocument) {
+          return {
+            success: false,
+          };
+        }
+
+        // generate embeddings and summarize
+        await vectorStore.addDocuments([
+          {
+            pageContent: content,
+            metadata: {
+              url,
+              chatbot_id: body.chatbotId,
+              organization_id: jobResponse.data.organizationId,
+              title: title,
+              hash,
+            },
+          },
+        ]);
+
+        return {
+          success: true,
+        };
+      } catch (error) {
         return {
           success: false,
+          error,
         };
       }
-
-      // generate embeddings and summarize
-      await vectorStore.addDocuments([
-        {
-          pageContent: content,
-          metadata: {
-            url,
-            chatbot_id: body.chatbotId,
-            organization_id: jobResponse.data.organizationId,
-            title: title,
-            hash,
-          },
-        },
-      ]);
-
-      return {
-        success: true,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error,
-      };
-    }
+    };
   });
 
   const concurrentRequests = 2;

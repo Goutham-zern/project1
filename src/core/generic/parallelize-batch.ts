@@ -19,7 +19,7 @@ import {
  * @param delayTime
  */
 function parallelizeBatch<T>(
-  promises: Array<Promise<T>>,
+  promises: Array<(...args: any[]) => Promise<T>>,
   concurrent = 2,
   delayTime = 1000
 ) {
@@ -30,7 +30,7 @@ function parallelizeBatch<T>(
   const stream$ = from(promises).pipe(
     bufferCount(concurrent),
     concatMap((items) => {
-      return combineLatest(items).pipe(delay(delayTime));
+      return combineLatest(items.map(item => item())).pipe(delay(delayTime));
     }),
     scan((acc, curr) => [...acc, ...curr], [] as T[])
   );
