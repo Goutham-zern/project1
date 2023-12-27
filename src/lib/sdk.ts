@@ -66,7 +66,8 @@ class MakerkitSdk {
   /**
    * Constructs a new instance of the class using the provided Supabase client.
    *
-   * @param {Client} client - The client object to be used for making API calls.
+   * @param {Client} client - The Supabase client object to be used for
+   * making API calls.
    */
   constructor(client: Client) {
     this.organization = new OrganizationSdk(client, new MembershipsSdk(client));
@@ -82,9 +83,7 @@ class OrganizationSdk {
   ) {}
 
   /**
-   * Retrieves the current organization for the user.   *   * @async
-   * @returns {Promise<Object|undefined>} The current organization for the user, or undefined if not found.
-   * @throws {Error} If an error occurs while retrieving the organization.
+   * Retrieves the current organization for the user.
    */
   public async getCurrent() {
     const organizationUid = await this.getCurrentOrganizationUid();
@@ -93,16 +92,13 @@ class OrganizationSdk {
       return;
     }
 
-    const { data, error } = await getOrganizationByUid(
-      this.client,
-      organizationUid,
-    );
+    const response = await getOrganizationByUid(this.client, organizationUid);
 
-    if (error) {
-      throw error;
+    if (response.error) {
+      throw response.error;
     }
 
-    return data ?? undefined;
+    return response.data ?? undefined;
   }
 
   /**
@@ -119,9 +115,7 @@ class OrganizationSdk {
   /**
    * Returns the organization UID for the current user.
    *
-   * @async
-   * @returns {Promise<string|undefined>} The organization UID or undefined if the user is not authenticated.
-   */
+   * */
   public async getCurrentOrganizationUid() {
     const userId = await experimental_getSdk(this.client).user.getCurrentId();
 
@@ -193,7 +187,7 @@ class SubscriptionsSdk {
    *
    * @param {string} organizationUid - The unique identifier of the organization.
    */
-  async getSubscriptionByOrganizationUid(organizationUid: string) {
+  public async getSubscriptionByOrganizationUid(organizationUid: string) {
     const { data, error } = await getOrganizationByUid(
       this.client,
       organizationUid,
@@ -209,7 +203,7 @@ class SubscriptionsSdk {
   /**
    * Determines if the organization with the given organizationId is active or on trial.
    */
-  async isActive(organizationId: string) {
+  public async isActive(organizationId: string) {
     const subscription =
       await this.getSubscriptionByOrganizationUid(organizationId);
 
@@ -238,7 +232,7 @@ class OrganizationSubscriptionSdk {
   /**
    * Gets the customer id associated with the subscription.
    */
-  get customerId() {
+  public get customerId() {
     return this.subscription?.customerId;
   }
 
@@ -246,18 +240,18 @@ class OrganizationSubscriptionSdk {
    * Retrieves the status of the data.
    *
    */
-  get status() {
+  public get status() {
     return this.data?.status;
   }
 
   /**
    * Checks if the subscription is in trial mode.
    */
-  async isTrial() {
+  public async isTrial() {
     return this.status === 'trialing';
   }
 
-  get priceId() {
+  public get priceId() {
     return this.data?.priceId;
   }
 
@@ -265,14 +259,14 @@ class OrganizationSubscriptionSdk {
    * Checks if the subscription is for the given Stripe price ID.
    * @param stripePriceId The Stripe price ID to check.
    */
-  async isPlan(stripePriceId: string) {
+  public async isPlan(stripePriceId: string) {
     return this.priceId === stripePriceId;
   }
 
   /**
    * Checks if the status of the subscription is active or trialing.
    **/
-  async isActive() {
+  public async isActive() {
     if (!this.status) {
       return false;
     }
