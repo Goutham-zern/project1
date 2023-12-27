@@ -70,23 +70,14 @@ export function handleChatBotRequest({ responseHeaders }: {
     ) ?? undefined;
 
     /**
-     * If the conversation reference id is missing, we return a 400 error.
-     * This should never happen in production (unless the cookie gets cleared during a session) but it's possible in development when using the playground.
+     * If the conversation reference id is missing, we don't save the conversation.
+     * This should never happen in production (unless the cookie gets cleared during a session)
+     * but it's possible in development when using the playground.
      */
     if (!conversationReferenceId) {
-      if (isProduction) {
-        logger.warn({
-          chatbotId,
-        }, `Missing conversation reference id.`);
-
-        return new Response(`Missing conversation reference id.`, {
-          status: 400,
-        });
-      } else {
-        logger.info({
-          chatbotId,
-        }, `Missing conversation reference id. Possible development environment.`);
-      }
+      logger.warn({
+        chatbotId,
+      }, `Missing conversation reference id. This conversation will not be saved.`);
     }
 
     logger.info({
@@ -139,6 +130,11 @@ export function handleChatBotRequest({ responseHeaders }: {
     const latestMessage = messages[messages.length - 1];
 
     const returnFallbackReply = () => {
+      logger.info({
+        conversationReferenceId,
+        chatbotId,
+      }, `Cannot generate AI Response. Falling back to search...`);
+
       return fallbackSearchDocuments({
         client,
         query: latestMessage.content,
@@ -180,7 +176,7 @@ export function handleChatBotRequest({ responseHeaders }: {
         conversationReferenceId,
         chatbotId,
         error,
-      }, `Error generating response. Falling back to search.`);
+      }, `Error generating response.`);
 
       return returnFallbackReply();
     }

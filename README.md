@@ -125,7 +125,7 @@ Then, update the `NEXT_PUBLIC_WIDGET_HOSTING_URL` environment variable to point 
 Create an `index.html` in the `dist` folder and paste the Chatbot Widget code (you can find it in the `Publish` tab of the Chatbot). For example:
 
 ```html
-<script data-chatbot='2' src='makerkit-chatbot.js' />
+<script data-chatbot='2' src='makerkit-chatbot.js'></script>
 ```
 
 Make sure to change the `data-chatbot` attribute to the ID of the chatbot you want to test.
