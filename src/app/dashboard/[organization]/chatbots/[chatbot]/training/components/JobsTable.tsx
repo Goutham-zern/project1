@@ -2,16 +2,17 @@
 
 import { ColumnDef, Row } from '@tanstack/react-table';
 import { useTranslation } from 'react-i18next';
+import { ObjectToCamel } from 'ts-case-convert/lib/caseConvert';
 
-import { getJobs } from '~/lib/jobs/queries';
 import DataTable from '~/core/ui/DataTable';
 import Badge from '~/core/ui/Badge';
 import Trans from '~/core/ui/Trans';
+import { Database } from '~/database.types';
 
-type Jobs = Awaited<ReturnType<typeof getJobs>>['data'];
+type Jobs = Database['public']['Tables']['jobs']['Row'];
 
 function JobsTable(props: {
-  jobs: Jobs;
+  jobs: Array<ObjectToCamel<Jobs>>;
   page: number;
   perPage: number;
   count: number;
@@ -34,7 +35,7 @@ function JobsTable(props: {
 
 export default JobsTable;
 
-function JobStatusBadge({ status }: { status: Jobs[0]['status'] }) {
+function JobStatusBadge({ status }: { status: Jobs['status'] }) {
   switch (status) {
     case 'failed':
       return (
@@ -63,8 +64,8 @@ function DateRenderer({
   row,
   accessorKey,
 }: React.PropsWithChildren<{
-  row: Row<Jobs[0]>;
-  accessorKey: keyof Jobs[0];
+  row: Row<ObjectToCamel<Jobs>>;
+  accessorKey: keyof ObjectToCamel<Jobs>;
 }>) {
   const doc = row.original;
 
@@ -80,7 +81,7 @@ function DateRenderer({
 function useColumns() {
   const { t } = useTranslation('chatbot');
 
-  const columns: Array<ColumnDef<Jobs[0]>> = [
+  const columns: ColumnDef<ObjectToCamel<Jobs>>[] = [
     {
       header: t('createdAt'),
       id: 'createdAt',

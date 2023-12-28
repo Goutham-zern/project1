@@ -1,8 +1,9 @@
 import { PlusCircleIcon } from '@heroicons/react/24/outline';
+import { ServerDataLoader } from '@makerkit/data-loader-supabase-nextjs';
+
 import getSupabaseServerComponentClient from '~/core/supabase/server-component-client';
 
 import { PageBody } from '~/core/ui/Page';
-import { getJobs } from '~/lib/jobs/queries';
 import JobsTable from './components/JobsTable';
 import CrawlWebsiteModal from '../components/CrawlWebsiteModal';
 import { getChatbot } from '~/lib/chatbots/queries';
@@ -30,18 +31,9 @@ async function ChatbotTrainingPage({
   params,
   searchParams,
 }: ChatbotTrainingPageParams) {
+  const client = getSupabaseServerComponentClient();
   const page = searchParams.page ? +searchParams.page : 1;
-
-  const [data, chatbot] = await Promise.all([
-    loadData(params.chatbot, { page }),
-    getChatbot(getSupabaseServerComponentClient(), params.chatbot),
-  ]);
-
-  const isEmpty = data.count === 0;
-
-  if (isEmpty) {
-    return <EmptyState chatbotId={chatbot.id} url={chatbot.url} />;
-  }
+  const chatbot = await getChatbot(client, params.chatbot);
 
   return (
     <PageBody className={'py-container space-y-4'}>
@@ -61,37 +53,37 @@ async function ChatbotTrainingPage({
         </div>
       </div>
 
-      <JobsTable {...data} />
+      <ServerDataLoader
+        client={client}
+        table={'jobs'}
+        camelCase
+        page={page}
+        where={{
+          chatbot_id: {
+            eq: chatbot.id,
+          },
+        }}
+      >
+        {({ data, count, pageSize }) => {
+          if (!count) {
+            return <EmptyState chatbotId={chatbot.id} url={chatbot.url} />;
+          }
+
+          return (
+            <JobsTable
+              jobs={data}
+              page={page}
+              perPage={pageSize}
+              count={count}
+            />
+          );
+        }}
+      </ServerDataLoader>
     </PageBody>
   );
 }
 
 export default withI18n(ChatbotTrainingPage);
-
-async function loadData(
-  chatbot: string,
-  params: {
-    page?: number;
-  },
-) {
-  const client = getSupabaseServerComponentClient();
-  const perPage = 25;
-  const page = params.page || 1;
-  const startOffset = (page - 1) * perPage;
-  const endOffset = page * perPage;
-
-  const { data: jobs, count } = await getJobs(client, chatbot, {
-    from: startOffset,
-    to: endOffset,
-  });
-
-  return {
-    jobs,
-    count,
-    page,
-    perPage,
-  };
-}
 
 function TrainingButton(props: { chatbotId: string; url: string }) {
   return (
