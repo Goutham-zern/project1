@@ -9,7 +9,6 @@ import configuration from '~/configuration';
 import Button from '~/core/ui/Button';
 import EditChatbotModal from '../components/EditChatbotModal';
 import Trans from '~/core/ui/Trans';
-import loadAppData from '~/lib/server/loaders/load-app-data';
 
 async function ChatbotLayout(
   props: React.PropsWithChildren<{
@@ -20,12 +19,7 @@ async function ChatbotLayout(
   }>,
 ) {
   const client = getSupabaseServerComponentClient();
-  const appData = await loadAppData(props.params.organization);
-
-  const chatbot = await getChatbot(client, {
-    chatbotId: props.params.chatbot,
-    organizationId: appData.organization?.id as number,
-  });
+  const chatbot = await getChatbot(client, props.params.chatbot);
 
   const path = (path: string = '') => {
     const { organization, chatbot } = props.params;
