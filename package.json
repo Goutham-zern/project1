@@ -1,6 +1,6 @@
 {
   "name": "next-supabase-chatbot-app",
-  "version": "0.10.15",
+  "version": "0.10.16",
   "private": true,
   "sideEffects": false,
   "scripts": {
@@ -38,9 +38,6 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.1.1",
-    "@makerkit/data-loader-supabase-nextjs": "^0.0.7",
-    "@marsidev/react-turnstile": "^0.4.0",
-    "@mozilla/readability": "^0.4.4",
     "@next/bundle-analyzer": "^14.0.4",
     "@radix-ui/react-avatar": "^1.0.4",
     "@radix-ui/react-checkbox": "^1.0.4",
