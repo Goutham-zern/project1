@@ -1,6 +1,6 @@
 {
   "name": "next-supabase-chatbot-app",
-  "version": "0.10.19",
+  "version": "0.10.21",
   "private": true,
   "sideEffects": false,
   "scripts": {
