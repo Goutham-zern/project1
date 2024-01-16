@@ -526,7 +526,6 @@ export interface Database {
       create_new_organization: {
         Args: {
           org_name: string
-          user_id: string
           create_user?: boolean
         }
         Returns: string
