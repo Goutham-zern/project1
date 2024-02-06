@@ -11,8 +11,10 @@ import TextField from '~/core/ui/TextField';
 import Button from '~/core/ui/Button';
 import Trans from '~/core/ui/Trans';
 import configuration from '~/configuration';
+import { useTranslation } from 'react-i18next';
 
 function PasswordResetRequestContainer() {
+  const { t } = useTranslation('auth');
   const resetPasswordMutation = useRequestResetPassword();
   const error = resetPasswordMutation.error;
   const success = resetPasswordMutation.data;
@@ -59,7 +61,7 @@ function PasswordResetRequestContainer() {
                     name="email"
                     required
                     type="email"
-                    placeholder={'your@email.com'}
+                    placeholder={t('emailPlaceholder')}
                   />
                 </TextField.Label>
               </div>

@@ -1,4 +1,5 @@
 import configuration from '~/configuration';
+import { InitOptions } from 'i18next';
 
 const fallbackLng = configuration.site.locale ?? 'en';
 const languages: string[] = [fallbackLng];
@@ -24,11 +25,21 @@ export const defaultI18nNamespaces = [
 function getI18nSettings(
   language: Maybe<string>,
   ns: string | string[] = defaultI18nNamespaces,
-) {
+): InitOptions {
+  let lng = language ?? fallbackLng;
+
+  if (!languages.includes(lng)) {
+    console.warn(
+      `Language "${lng}" is not supported. Falling back to "${fallbackLng}"`,
+    );
+
+    lng = fallbackLng;
+  }
+
   return {
     supportedLngs: languages,
     fallbackLng,
-    lng: language ?? fallbackLng,
+    lng,
     fallbackNS: defaultI18nNamespaces,
     defaultNS: defaultI18nNamespaces,
     ns,

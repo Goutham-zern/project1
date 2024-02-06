@@ -1,6 +1,6 @@
 import { useCallback, useContext, useState } from 'react';
 import Image from 'next/image';
-import { useParams, usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import classNames from 'clsx';
 
 import {
@@ -200,8 +200,6 @@ function OrganizationItem({
 export default OrganizationsSelector;
 
 function useChangeOrganization() {
-  const path = usePathname();
-  const params = useParams();
   const router = useRouter();
 
   return useCallback(
@@ -209,9 +207,9 @@ function useChangeOrganization() {
       const appPrefix = configuration.paths.appPrefix;
       const organizationPath = `${appPrefix}/${uuid}`;
 
-      router.push(organizationPath);
+      router.replace(organizationPath);
     },
-    [params?.organization, path, router],
+    [router],
   );
 }
 
