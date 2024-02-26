@@ -2,6 +2,7 @@ import Container from '~/core/ui/Container';
 import SubHeading from '~/core/ui/SubHeading';
 import Heading from '~/core/ui/Heading';
 import FaqItem from '~/app/(site)/components/FaqItem';
+import { withI18n } from '~/i18n/with-i18n';
 
 export const metadata = {
   title: 'FAQ',
@@ -83,4 +84,4 @@ const FAQPage = () => {
   );
 };
 
-export default FAQPage;
+export default withI18n(FAQPage);

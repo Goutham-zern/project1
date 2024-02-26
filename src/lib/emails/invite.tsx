@@ -27,7 +27,7 @@ interface Props {
 }
 
 export default function renderInviteEmail(props: Props) {
-  const previewText = `Join ${props.invitedUserEmail} on ${props.productName}}`;
+  const previewText = `Join ${props.invitedUserEmail} on ${props.productName}`;
 
   return render(
     <Html>

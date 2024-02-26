@@ -29,6 +29,8 @@ import getLanguageCookie from '~/i18n/get-language-cookie';
  * the request lifetime, which allows you to call the same across layouts.
  */
 const loadAppData = cache(async (organizationUid: string) => {
+  const logger = getLogger();
+
   try {
     const client = getSupabaseServerComponentClient();
     const session = await requireSession(client);
@@ -45,13 +47,38 @@ const loadAppData = cache(async (organizationUid: string) => {
 
     const isOnboarded = Boolean(userRecord?.onboarded);
 
-    // when the user is not yet onboarded,
-    // we simply redirect them back to the onboarding flow
-    if (!isOnboarded || !userRecord) {
+    if (!userRecord) {
+      logger.info(
+        {
+          name: 'loadAppData',
+          userId,
+        },
+        `User record not found in the database. Redirecting to onboarding...`,
+      );
+
+      return redirectToOnboarding();
+    }
+
+    if (!isOnboarded) {
+      logger.info(
+        {
+          name: 'loadAppData',
+        },
+        `User is not yet onboarded. Redirecting to onboarding...`,
+      );
+
       return redirectToOnboarding();
     }
 
     if (!organizationData) {
+      logger.info(
+        {
+          name: 'loadAppData',
+          userId,
+        },
+        `User is not a member of any organization. Redirecting to home...`,
+      );
+
       return redirect(configuration.paths.appHome);
     }
 
@@ -77,8 +104,6 @@ const loadAppData = cache(async (organizationUid: string) => {
       ui: getUIStateCookies(),
     };
   } catch (error) {
-    const logger = getLogger();
-
     // if the error is a redirect error, we simply redirect the user
     // to the destination URL extracted from the error
     if (isRedirectError(error)) {
@@ -89,6 +114,7 @@ const loadAppData = cache(async (organizationUid: string) => {
 
     logger.warn(
       {
+        name: 'loadAppData',
         error: JSON.stringify(error),
       },
       `Could not load application data`,

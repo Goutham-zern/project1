@@ -6,7 +6,7 @@
 interface UserData {
   id: string;
   photoUrl?: string | null;
-  displayName?: string;
+  displayName?: string | null;
   onboarded: boolean;
 }
 
