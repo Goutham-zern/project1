@@ -115,7 +115,7 @@ jobs:
 
       - name: 🔎 Cypress
         if: steps.supabase-start.outputs.exit_code == 0
-        run: npm run test:e2e
+        run: npm run test:e2e build
 
       - name: Archive test screenshots
         uses: actions/upload-artifact@v3
