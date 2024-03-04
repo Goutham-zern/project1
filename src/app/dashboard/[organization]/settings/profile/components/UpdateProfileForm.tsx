@@ -160,43 +160,49 @@ function UploadProfileAvatarForm(props: {
 
   const onValueChange = useCallback(
     async (file: File | null) => {
-      if (file) {
-        const promise = uploadUserProfilePhoto(client, file, props.userId).then(
-          (photoUrl) => {
-            props.onAvatarUpdated(photoUrl);
+      const removeExistingStorageFile = () => {
+        if (props.currentPhotoURL) {
+          return (
+            deleteProfilePhoto(client, props.currentPhotoURL) ??
+            Promise.resolve()
+          );
+        }
 
-            return client
-              .from(USERS_TABLE)
-              .update({
-                photo_url: photoUrl,
-              })
-              .eq('id', props.userId)
-              .throwOnError();
-          },
+        return Promise.resolve();
+      };
+
+      if (file) {
+        const promise = removeExistingStorageFile().then(() =>
+          uploadUserProfilePhoto(client, file, props.userId).then(
+            (photoUrl) => {
+              props.onAvatarUpdated(photoUrl);
+
+              return client
+                .from(USERS_TABLE)
+                .update({
+                  photo_url: photoUrl,
+                })
+                .eq('id', props.userId)
+                .throwOnError();
+            },
+          ),
         );
 
         createToaster(promise);
       } else {
-        if (props.currentPhotoURL) {
-          const promise = deleteProfilePhoto(
-            client,
-            props.currentPhotoURL,
-          )?.then(() => {
-            props.onAvatarUpdated(null);
+        const promise = removeExistingStorageFile().then(() => {
+          props.onAvatarUpdated(null);
 
-            return client
-              .from(USERS_TABLE)
-              .update({
-                photo_url: null,
-              })
-              .eq('id', props.userId)
-              .throwOnError();
-          });
+          return client
+            .from(USERS_TABLE)
+            .update({
+              photo_url: null,
+            })
+            .eq('id', props.userId)
+            .throwOnError();
+        });
 
-          if (promise) {
-            createToaster(promise);
-          }
-        }
+        createToaster(promise);
       }
     },
     [client, createToaster, props],

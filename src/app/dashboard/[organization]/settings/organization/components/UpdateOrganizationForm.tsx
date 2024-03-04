@@ -144,24 +144,34 @@ function UploadLogoForm(props: {
 
   const onValueChange = useCallback(
     async (file: File | null) => {
+      const removeExistingStorageFile = () => {
+        if (props.currentLogoUrl) {
+          return deleteLogo(client, props.currentLogoUrl);
+        }
+
+        return Promise.resolve();
+      };
+
       if (file) {
-        const promise = uploadLogo({
-          client,
-          organizationId: props.organizationId,
-          logo: file,
-        }).then((url) => {
-          props.onLogoUpdated(url);
-        });
+        const promise = removeExistingStorageFile()
+          .then(() =>
+            uploadLogo({
+              client,
+              organizationId: props.organizationId,
+              logo: file,
+            }),
+          )
+          .then((url) => {
+            props.onLogoUpdated(url);
+          });
 
         createToaster(promise);
       } else {
-        if (props.currentLogoUrl) {
-          const promise = deleteLogo(client, props.currentLogoUrl)?.then(() => {
-            props.onLogoUpdated(null);
-          });
+        const promise = removeExistingStorageFile().then(() => {
+          props.onLogoUpdated(null);
+        });
 
-          createToaster(promise);
-        }
+        createToaster(promise);
       }
     },
     [client, createToaster, props],
