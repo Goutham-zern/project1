@@ -1,11 +1,11 @@
 import React from 'react';
-import { Post } from 'contentlayer/generated';
+import { Post as PostType } from 'contentlayer/generated';
 
 import PostHeader from './PostHeader';
 import MDXRenderer from '~/core/ui/MDXRenderer/MDXRenderer';
 
 const Post: React.FCC<{
-  post: Post;
+  post: PostType;
   content: string;
 }> = ({ post, content }) => {
   return (
