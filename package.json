@@ -1,6 +1,6 @@
 {
   "name": "next-supabase-chatbot-app",
-  "version": "0.11.3",
+  "version": "0.11.5",
   "private": true,
   "sideEffects": false,
   "scripts": {
@@ -85,7 +85,7 @@
     "react-colorful": "^5.6.1",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.51.0",
-    "react-i18next": "^14.0.8",
+    "react-i18next": "^14.1.0",
     "react-top-loading-bar": "^2.3.1",
     "recharts": "^2.12.2",
     "rehype-autolink-headings": "^7.1.0",
@@ -94,7 +94,7 @@
     "server-only": "^0.0.1",
     "sitemapper": "^3.2.8",
     "sonner": "^1.4.3",
-    "stripe": "^14.19.0",
+    "stripe": "^14.20.0",
     "swr": "^2.2.5",
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",
