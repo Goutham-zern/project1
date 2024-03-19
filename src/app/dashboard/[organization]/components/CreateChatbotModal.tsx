@@ -20,6 +20,7 @@ function CreateChatbotModal(
     canCreateChatbot: boolean;
   }>,
 ) {
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   return (
     <Modal Trigger={props.children} heading={
       <Trans i18nKey={'chatbot:createChatbotModalHeading'} />
