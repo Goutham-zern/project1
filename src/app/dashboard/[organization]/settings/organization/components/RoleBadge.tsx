@@ -12,6 +12,8 @@ const roleClassNameBuilder = cva('font-medium', {
         'bg-yellow-100 dark:bg-yellow-200 text-current dark:text-dark-900',
       [MembershipRole.Admin]: 'bg-blue-50 dark:bg-blue-500/10 text-blue-500',
       [MembershipRole.Member]: 'bg-blue-50 dark:bg-blue-500/10 text-blue-500',
+      [MembershipRole.Readonly]: 'bg-blue-50 dark:bg-blue-500/10 text-blue-500',
+
     },
   },
 });
