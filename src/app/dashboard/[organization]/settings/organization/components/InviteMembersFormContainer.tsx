@@ -45,6 +45,7 @@ const InviteMembersFormContainer = () => {
             id,
           });
         } catch (e) {
+          console.log('here')
           toast.error(t('organization:inviteMembersError'), {
             id,
           });
@@ -72,7 +73,6 @@ const InviteMembersFormContainer = () => {
       </Button>
     </div>
   );
-
   return (
     <InviteMembersForm
       currentUserRole={user?.role}

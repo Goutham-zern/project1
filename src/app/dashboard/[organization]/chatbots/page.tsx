@@ -16,6 +16,12 @@ import getSupabaseServerComponentClient from '~/core/supabase/server-component-c
 
 import CreateChatbotModal from '../components/CreateChatbotModal';
 import ChatbotItemDropdown from './components/ChatbotItemDropdown';
+import useCurrentUserRole from '~/lib/organizations/hooks/use-current-user-role';
+import useUserSession from '~/core/hooks/use-user-session';
+import { getMembershipByEmail, getUserRoleByMembershipId } from '~/lib/memberships/queries';
+import { getOrganizationInvitedMembers, getOrganizationsByUserId } from '~/lib/organizations/database/queries';
+import MembershipRole from '~/lib/organizations/types/membership-role';
+import { User } from '@supabase/supabase-js';
 
 export const metadata = {
   title: 'Chatbots',
@@ -29,6 +35,8 @@ interface ChatbotsPageProps {
 
 async function ChatbotsPage({ params }: ChatbotsPageProps) {
   const [chatbots, canCreateChatbot] = await loadChatbots(params.organization);
+  console.log(canCreateChatbot)
+
 
   return (
     <>
@@ -54,7 +62,11 @@ async function ChatbotsPage({ params }: ChatbotsPageProps) {
 
 export default withI18n(ChatbotsPage);
 
-function EmptyState() {
+async function EmptyState() {
+  const client = getSupabaseServerComponentClient();
+  const userData = await client.auth.getUser();
+  const hasPermissions = await canUserCreateChatbot(userData.data.user)
+  
   return (
     <div className={'flex flex-col items-center justify-center h-full w-full'}>
       <div
@@ -72,7 +84,7 @@ function EmptyState() {
           </SubHeading>
         </div>
 
-        <CreateChatbotModal canCreateChatbot={true}>
+        <CreateChatbotModal canCreateChatbot={hasPermissions}>
           <Button block size={'lg'}>
             <PlusCircleIcon className={'h-6 mr-4'} />
             <span>
@@ -136,12 +148,20 @@ async function loadChatbots(uid: string) {
     .rpc('can_create_chatbot', {
       org_id: organization,
     })
-    .then((response) => {
+    .then(async (response) => {
       if (response.error) {
         console.error(response.error);
 
         return false;
       }
+
+      const client = getSupabaseServerComponentClient();
+      const userData = await client.auth.getUser();
+      const user = userData.data.user;
+      if (!await canUserCreateChatbot(user)) {
+        return false;
+       }
+
 
       return response.data;
     });
@@ -149,4 +169,28 @@ async function loadChatbots(uid: string) {
   const chatbots = getChatbots(client, organization);
 
   return Promise.all([chatbots, canCreateChatbot]);
+}
+
+const canUserCreateChatbot = async (user: User | null) => {
+      // chech if user does not have read-only permisson
+      const client2 = getSupabaseServerComponentClient();
+
+      if (user !== null) {
+        // const membershipId = await
+        if ( user.email && user.id) {
+          const organizationData = await getOrganizationsByUserId(client2, user.id);
+          if ( organizationData.data != null) {
+            const role: MembershipRole = organizationData.data[0].role;
+            if (role === MembershipRole.Readonly) 
+            {
+              return false;
+            }
+          }
+        } else {
+          return false
+
+        }
+
+      }
+      return true;
 }

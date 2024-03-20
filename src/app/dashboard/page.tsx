@@ -22,6 +22,7 @@ import { PageBody, PageHeader } from '~/core/ui/Page';
 import configuration from '~/configuration';
 import I18nProvider from '~/i18n/I18nProvider';
 import { getUserById } from '~/lib/user/database/queries';
+import Organization from '~/lib/organizations/types/organization';
 
 async function OrganizationsPage() {
   const client = getSupabaseServerComponentClient();
@@ -81,7 +82,7 @@ async function OrganizationsPage() {
             >
               <NewOrganizationButtonContainer csrfToken={csrfToken} />
 
-              {organizations.map((organization) => {
+              {organizations.map((organization: Organization) => {
                 const href = getAppHomeUrl(organization.uuid);
 
                 return (

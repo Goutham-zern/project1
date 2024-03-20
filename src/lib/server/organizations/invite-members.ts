@@ -57,6 +57,8 @@ export default async function inviteMembers(params: Params) {
     getOrganizationByUid(client, organizationUid),
   ]);
 
+  console.log(inviterId, 'inviterId')
+
   // Check if the inviter exists
   if (!inviter) {
     return Promise.reject(`Inviter record was not found`);
@@ -66,7 +68,6 @@ export default async function inviteMembers(params: Params) {
   if (!organization) {
     return Promise.reject(`Organization record was not found`);
   }
-
   const organizationName = organization.name;
   const organizationId = organization.id;
 
@@ -75,6 +76,9 @@ export default async function inviteMembers(params: Params) {
     organizationUid,
     userId: params.inviterId,
   });
+
+  console.log(inviterRole, 'inviterRole')
+  debugger
 
   // validate that the inviter is currently in the organization
   if (inviterRole === undefined) {
@@ -124,6 +128,8 @@ export default async function inviteMembers(params: Params) {
       organizationId,
       email: invite.email,
     });
+
+    console.log(existingInvite, 'existingInvite')
 
     const inviteExists = Boolean(existingInvite);
 
@@ -269,6 +275,7 @@ async function sendInviteEmail(props: {
     invitedUserEmail,
     inviter,
   });
+
 
   return sendEmail({
     to: invitedUserEmail,

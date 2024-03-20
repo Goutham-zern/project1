@@ -33,6 +33,12 @@ const MEMBER = {
   value: MembershipRole.Member,
 };
 
-const roles = [OWNER, ADMIN, MEMBER];
+const READONLY = {
+  label: 'ReadOnly',
+  description: 'common:roles.readonly.description',
+  value: MembershipRole.Readonly
+}
+
+const roles = [OWNER, ADMIN, MEMBER, READONLY];
 
 export default roles;

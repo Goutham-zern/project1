@@ -53,6 +53,10 @@
     "member": {
       "label": "Member",
       "description": "Cannot invite members or change settings"
+    },  
+    "readonly": {
+      "label": "Readonly",
+      "description": "Can only read information"
     }
   }
 }

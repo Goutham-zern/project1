@@ -234,6 +234,8 @@ export const inviteMembersToOrganizationAction = withSession(
       inviterId,
     };
 
+    console.log(params, 'paramas')
+
     try {
       // send requests to invite members
       await inviteMembers(params);

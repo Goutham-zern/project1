@@ -35,6 +35,7 @@ function OrganizationMembersList({
   const { t } = useTranslation('organization');
 
   const currentUser = useMemo(() => {
+    console.log(members, 'members');
     return members.find((member) => {
       return member.auth.id === currentUserId;
     });

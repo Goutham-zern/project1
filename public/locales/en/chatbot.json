@@ -44,7 +44,7 @@
   "editChatbotSubmitButton": "Save Changes",
   "createChatbotSubmitButton": "Create Chatbot",
   "cannotCreateChatbot": "Cannot create chatbot",
-  "cannotCreateChatbotDescription": "You have reached the limit of chatbots you can create. Please upgrade your plan to create more chatbots.",
+  "cannotCreateChatbotDescription": "You have reached the limit of chatbots or don't have the permession to create.",
   "createChatbotAlertError": "Failed to create chatbot",
   "createChatbotAlertErrorDescription": "Sorry, we were unable to create your chatbot. Please try again later.",
   "backToChatbotsButton": "Back to Chatbots",

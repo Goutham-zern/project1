@@ -10,7 +10,8 @@ interface SendEmailParams {
 
 export default async function sendEmail(config: SendEmailParams) {
   const transporter = await getSMTPTransporter();
-
+  // console.log(transporter, 'transporter');
+  // console.log(config, 'config');
   return transporter.sendMail(config);
 }
 
