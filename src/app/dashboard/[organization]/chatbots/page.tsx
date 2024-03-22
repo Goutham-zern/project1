@@ -181,6 +181,7 @@ const canUserCreateChatbot = async (user: User | null) => {
           const organizationData = await getOrganizationsByUserId(client2, user.id);
           if ( organizationData.data != null) {
             const role: MembershipRole = organizationData.data[0].role;
+            console.log(role);
             if (role === MembershipRole.Readonly) 
             {
               return false;

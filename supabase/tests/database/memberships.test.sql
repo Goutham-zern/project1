@@ -172,7 +172,7 @@ select
         where
           user_id = tests.get_supabase_uid('user-3')
           and organization_id = makerkit.get_organization_id('Supabase')
-          and role = 2 $$, 'verify transfer worked for new owner'));
+          and role = 3 $$, 'verify transfer worked for new owner'));
 
 select
   (isnt_empty($$
@@ -181,7 +181,7 @@ select
         where
           user_id = tests.get_supabase_uid('user')
           and organization_id = makerkit.get_organization_id('Supabase')
-          and role = 1 $$, 'verify transfer worked for previous owner'));
+          and role = 2 $$, 'verify transfer worked for previous owner'));
 
 select
   *

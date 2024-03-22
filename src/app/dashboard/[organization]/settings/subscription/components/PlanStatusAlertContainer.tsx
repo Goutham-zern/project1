@@ -15,7 +15,7 @@ enum SubscriptionStatusQueryParams {
 
 function PlansStatusAlertContainer() {
   const status = useSubscriptionStatus();
-
+  console.log(status);
   return (
     <If condition={status !== undefined}>
       <PlansStatusAlert status={status as SubscriptionStatusQueryParams} />

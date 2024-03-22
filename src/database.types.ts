@@ -523,13 +523,14 @@ export interface Database {
             }
             Returns: boolean
           }
-      create_new_organization: {
-        Args: {
-          org_name: string
-          create_user?: boolean
-        }
-        Returns: string
-      }
+          create_new_organization: {
+            Args: {
+              org_name: string;
+              // user_id: string;
+              create_user?: boolean;
+            };
+            Returns: string;
+          };
       current_user_is_member_of_organization: {
         Args: {
           organization_id: number

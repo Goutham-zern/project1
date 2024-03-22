@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from '~/database.types';
 
 interface Params {
+  userId: string;
   organizationName: string;
   client: SupabaseClient<Database>;
 }
@@ -14,10 +15,12 @@ interface Params {
  * @param organizationName
  * @param client
  */
-async function completeOnboarding({ organizationName, client }: Params) {
+async function completeOnboarding({ userId, organizationName, client }: Params) {
   return client
     .rpc('create_new_organization', {
       org_name: organizationName,
+      create_user: true
+      // user_id: userId
     })
     .single<string>();
 }

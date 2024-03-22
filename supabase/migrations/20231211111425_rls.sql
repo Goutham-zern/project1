@@ -68,7 +68,7 @@ end if;
     raise exception 'Invite code not found';
   end if;
 
-  if target_role = 2 then
+  if target_role = 3 then
     raise exception 'Owner cannot be invited';
   end if;
 
@@ -122,13 +122,13 @@ begin
   update
     memberships
   set
-    role = 2
+    role = 3
   where
     id = target_user_membership_id;
   update
     memberships
   set
-    role = 1
+    role = 2
   where
     user_id = auth.uid()
     and organization_id = org_id;

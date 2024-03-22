@@ -48,7 +48,8 @@ export const createNewOrganizationAction = withSession(
     const { data: organizationUid, error } = await client
       .rpc('create_new_organization', {
         org_name: organization,
-        create_user: false,
+        // user_id: userId,
+       create_user: false,
       })
       .throwOnError()
       .single();
@@ -233,8 +234,6 @@ export const inviteMembersToOrganizationAction = withSession(
       organizationUid,
       inviterId,
     };
-
-    console.log(params, 'paramas')
 
     try {
       // send requests to invite members

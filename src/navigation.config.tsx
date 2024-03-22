@@ -3,6 +3,7 @@ import {
   ChatBubbleLeftIcon,
   UserGroupIcon,
   UserIcon,
+  BriefcaseIcon,
 } from '@heroicons/react/24/outline';
 
 import configuration from '~/configuration';
@@ -40,6 +41,14 @@ const NAVIGATION_CONFIG = (organization: string): NavigationConfig => ({
       path: getPath(organization, 'chatbots'),
       Icon: ({ className }: { className: string }) => {
         return <ChatBubbleLeftIcon className={className} />;
+      },
+      end: false,
+    },
+    {
+      label: 'common:department',
+      path: getPath(organization, 'departments'),
+      Icon: ({ className }: { className: string }) => {
+        return <BriefcaseIcon className={className} />;
       },
       end: false,
     },

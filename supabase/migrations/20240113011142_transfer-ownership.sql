@@ -34,14 +34,14 @@ begin
   update
     memberships
   set
-    role = 2
+    role = 3
   where
     id = target_user_membership_id
     and organization_id = org_id;
   update
     memberships
   set
-    role = 1
+    role = 2
   where
     user_id = auth.uid ()
     and organization_id = org_id

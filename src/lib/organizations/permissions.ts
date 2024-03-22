@@ -37,6 +37,7 @@ export function canUpdateUser(
  * By default, only Owners and Admin can invite users
  */
 export function canChangeBilling(currentUserRole: MembershipRole) {
+  console.log(currentUserRole)
   return currentUserRole === MembershipRole.Owner;
 }
 
