@@ -61,13 +61,14 @@ async function createDepartment(departmentData) {
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const { data, error } = await supabase.from('department').insert([departmentData]);
+    const { data, error, status } = await supabase.from('department').insert([departmentData]);
     if (error) {
       throw error;
     }
-    return { data: data || [] };
+    return status;
   } catch (error) {
-    return { error };
+    console.log(error);
+    return 500
   }
 }
 
@@ -122,8 +123,11 @@ export async function uploadImageToSupabase(name, file) {
       throw existingImageError;
     }
 
+    console.log('Existing image:', existingImage);
+
     // If an existing image is found, delete it
     if (existingImage) {
+      console.log('Deleting existing image...');
       const { error: deleteError } = await supabase
         .storage
         .from('department_images')
@@ -134,7 +138,12 @@ export async function uploadImageToSupabase(name, file) {
       }
     }
 
+    //https://dwsqxsfcralbsbwgoicp.supabase.co/storage/v1/object/public/department_images/Zod2_.png
+    //https://dwsqxsfcralbsbwgoicp.supabase.co/storage/v1/object/public/department_images/Zod2_.png
+
     // Upload the new image
+    console.log(file);
+    console.log('Uploading new image...');
     const { data: uploadedImage, error: uploadError } = await supabase
       .storage
       .from('department_images')

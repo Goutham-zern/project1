@@ -19,7 +19,7 @@ const getSupabaseRouteHandlerClient = (
   const keys = getSupabaseClientKeys();
 
   if (params.admin) {
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const serviceRoleKey = process.env.NEXT_SUPABASE_SERVICE_ROLE_KEY;
 
     if (!serviceRoleKey) {
       throw new Error('Supabase Service Role Key not provided');

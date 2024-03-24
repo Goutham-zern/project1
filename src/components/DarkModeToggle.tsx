@@ -97,7 +97,7 @@ const DarkModeToggle = () => {
               <MoonIcon className={'h-4'} />
 
               <span>
-                <Trans i18nKey={'common:darkTheme'} />
+                <Trans i18nKey={'department:darkTheme'} />
               </span>
             </span>
           </SelectItem>

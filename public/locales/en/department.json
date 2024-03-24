@@ -1,1 +1,14 @@
-{}
+{
+    "departmentHeading": "Departments",
+  "departmentSubHeading": "Departments present in your organization.",
+  "departmentLogoLoading": "Loading department logo",
+  "departmentLogoError": "Error loading department logo",
+  "departmentLogoSuccess": "Successfully loaded department logo",
+  "departmentLogoInputHeading": "Department Logo",
+  "departmentLogoInputSubheading": "Upload an image of your department logo",
+  "createDepartmentModalSubheading": "Add department details",
+  "createDepartmentModalHeading": "Create a Department",
+  "departmentNameFieldLabel": "Department Name",
+  "createDepartmentSubmitButton": "Submit",
+  "departmentLogoUploadButtonLabel": "Upload Department Logo"
+}

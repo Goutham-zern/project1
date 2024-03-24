@@ -45,7 +45,7 @@ const NAVIGATION_CONFIG = (organization: string): NavigationConfig => ({
       end: false,
     },
     {
-      label: 'common:department',
+      label: 'department:department',
       path: getPath(organization, 'departments'),
       Icon: ({ className }: { className: string }) => {
         return <BriefcaseIcon className={className} />;

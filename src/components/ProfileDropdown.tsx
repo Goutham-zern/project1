@@ -1,5 +1,5 @@
 'use client';
-
+import React from 'react'
 import { useMemo } from 'react';
 import Link from 'next/link';
 import classNames from 'clsx';
@@ -44,6 +44,7 @@ import {
 import If from '~/core/ui/If';
 import GlobalRole from '~/core/session/types/global-role';
 import useUser from '~/core/hooks/use-user';
+import AboutUsDialog from './AboutUs';
 
 const ProfileDropdown: React.FCC<{
   userSession: Maybe<UserSession>;
@@ -65,6 +66,17 @@ const ProfileDropdown: React.FCC<{
   const isSuperAdmin = useMemo(() => {
     return user?.app_metadata.role === GlobalRole.SuperAdmin;
   }, [user]);
+
+  const [isAboutUsOpen, setIsAboutUsOpen] = React.useState(false);
+
+  const handleAboutUsClick = () => {
+    setIsAboutUsOpen(true);
+  };
+
+  const handleAboutUsClose = () => {
+    setIsAboutUsOpen(false);
+  };
+
 
   return (
     <DropdownMenu>
@@ -128,12 +140,19 @@ const ProfileDropdown: React.FCC<{
           >
             <Squares2X2Icon className={'h-5'} />
             <span>
-              <Trans i18nKey={'common:dashboardTabLabel'} />
+              <Trans i18nKey={'department:dashboardTabLabel'} />
             </span>
           </Link>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
+
+        <DropdownMenuItem onClick={handleAboutUsClick}>
+            <span className={'flex h-full w-full items-center space-x-2 cursor-pointer'}>
+              <QuestionMarkCircleIcon className={'h-5'} />
+              <span>About Us</span>
+            </span>
+          </DropdownMenuItem>
 
         <DropdownMenuItem asChild>
           <Link
@@ -143,7 +162,7 @@ const ProfileDropdown: React.FCC<{
             <QuestionMarkCircleIcon className={'h-5'} />
 
             <span>
-              <Trans i18nKey={'common:documentation'} />
+              <Trans i18nKey={'department:documentation'} />
             </span>
           </Link>
         </DropdownMenuItem>
@@ -182,6 +201,7 @@ const ProfileDropdown: React.FCC<{
           </span>
         </DropdownMenuItem>
       </DropdownMenuContent>
+      <AboutUsDialog open={isAboutUsOpen} onClose={handleAboutUsClose} />
     </DropdownMenu>
   );
 };
@@ -234,7 +254,7 @@ function ThemeSelectorSubMenu() {
               <MoonIcon className={'h-4'} />
 
               <span>
-                <Trans i18nKey={'common:darkTheme'} />
+                <Trans i18nKey={'department:darkTheme'} />
               </span>
             </Wrapper>
 

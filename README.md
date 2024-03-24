@@ -5,7 +5,7 @@ Supabase kit.
 
 This application **is a demo app** and **may have bugs and issues**.
 If you plan on using it in a production environment, please **ensure you test
-it thoroughly and fix any issues you may find**. 
+it thoroughly and fix any issues you may find**.
 
 The scope of this app is to show patterns and best practices for building a SaaS with Makerkit - and not to be a production-ready application.
 
@@ -14,6 +14,7 @@ The scope of this app is to show patterns and best practices for building a SaaS
 This application is a demo application that allows you to create a Chatbot SaaS application.
 
 Users can:
+
 1. Create chatbots in an Organization (based on plan details)
 2. Update the chatbot settings (e.g. name, description, etc.) and branding (e.g. colors, etc.)
 3. Crawl websites and train the chatbot using OpenAI
@@ -111,7 +112,6 @@ You can make this command part of your CI/CD pipeline to deploy the Chatbot Widg
 
 You need to update the file `packages/widget/.env` to update the environment variables for the Chatbot Widget. The production environment variables are instead in the file `.env.production`.
 
-
 ### Deploying the Chatbot Widget
 
 You will need to deploy the Chatbot Widget to a CDN. You can use any CDN you prefer, such as Cloudflare Pages, Netlify, Vercel, etc.
@@ -125,7 +125,7 @@ Then, update the `NEXT_PUBLIC_WIDGET_HOSTING_URL` environment variable to point 
 Create an `index.html` in the `dist` folder and paste the Chatbot Widget code (you can find it in the `Publish` tab of the Chatbot). For example:
 
 ```html
-<script data-chatbot='2' src='makerkit-chatbot.js'></script>
+<script data-chatbot="2" src="makerkit-chatbot.js"></script>
 ```
 
 Make sure to change the `data-chatbot` attribute to the ID of the chatbot you want to test.
@@ -178,7 +178,7 @@ QSTASH_NEXT_SIGNING_KEY=
 
 You can grab these values from your Upstash QStash dashboard.
 
-NB: You can change the Task Queue to any other service you prefer, such as AWS SQS, Google Cloud Tasks, Inngest, Trigger, etc. 
+NB: You can change the Task Queue to any other service you prefer, such as AWS SQS, Google Cloud Tasks, Inngest, Trigger, etc.
 You will need to adjust the code accordingly.
 
 ### QStash endpoint
@@ -203,7 +203,7 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
-This is a quick guide to get you started with the project. For more details, 
+This is a quick guide to get you started with the project. For more details,
 please refer to the [documentation](https://makerkit.dev/docs/next-supabase/introduction).
 
 ### Before you deploy to production
@@ -211,14 +211,14 @@ please refer to the [documentation](https://makerkit.dev/docs/next-supabase/intr
 Many users try to deploy to production without going through the steps below.
 The result is the application won't be working as expected.
 
-**Important**: deploying to production (Vercel or other) will require you to 
-fill the required environment variables. 
+**Important**: deploying to production (Vercel or other) will require you to
+fill the required environment variables.
 
-[Please refer to the documentation](https://makerkit.dev/docs/next-supabase/going-to-production-overview) to 
+[Please refer to the documentation](https://makerkit.dev/docs/next-supabase/going-to-production-overview) to
 learn more.
 
-**Failure to do so will result in your application not working as expected 
-or not deploying at all**. Please ensure you have the required environment 
+**Failure to do so will result in your application not working as expected
+or not deploying at all**. Please ensure you have the required environment
 variables and keys before deploying to production.
 
 ### Requirements
@@ -281,19 +281,19 @@ npm run supabase:start
 **NB**: this does not run your remote Supabase project, but a local instance
 using Docker. This is useful for development and testing.
 
-For production, you will need to copy your remote instance keys, and push 
+For production, you will need to copy your remote instance keys, and push
 the database migrations to your remote instance.
 
 **Recommendation**: use the local instance for development, and the
 production instance **when you're ready to deploy**. Please set up the local
-instance first before attempting to use the production instance, so that you 
+instance first before attempting to use the production instance, so that you
 can test your application locally and familiarise with the product.
 
 If you are planning to deploy Supabase to production right away, [please ensure you read this guide by Supabase first](https://supabase.com/docs/guides/cli/local-development#link-your-project).
 
 #### Adding the Supabase Keys to the Environment Variables
 
-We add the default Supabase keys to the environment variables, so we can run 
+We add the default Supabase keys to the environment variables, so we can run
 Supabase locally right away.
 
 When running the command, we will see a message like this:
@@ -314,25 +314,24 @@ Started supabase local development setup.
 service_role key: ****************************************************
 ```
 
-Only if the values above are different than the ones already setup in `.env.
-development` and `.env.test`, we need to copy the `anon key` and 
+Only if the values above are different than the ones already setup in `.env. development` and `.env.test`, we need to copy the `anon key` and
 `service_role key` values and add them to the `.env.local` file:
 
 ```
 NEXT_PUBLIC_SUPABASE_ANON_KEY=****************************************************
-SUPABASE_SERVICE_ROLE_KEY=****************************************************
+NEXT_SUPABASE_SERVICE_ROLE_KEY=****************************************************
 ```
 
 #### Database types (optional)
 
-We provide the default database types for TypeScript. If you want to 
+We provide the default database types for TypeScript. If you want to
 generate new types, you can do so with the following command:
 
 ```
 npm run typegen
 ```
 
-This is useful when you add/update new tables or columns to your database, 
+This is useful when you add/update new tables or columns to your database,
 so that the Supabase client can provide you with the correct types.
 
 ### Next.js Server
@@ -387,7 +386,7 @@ Make sure to add the environment variables to the provider you're deploying.
 
 ### Running Tests
 
-To customize the testing environment, add the required environment variables to 
+To customize the testing environment, add the required environment variables to
 your `.env.test` file.
 
 #### Running E2E Stripe Tests
@@ -405,14 +404,14 @@ The first two steps are only required to run the Cypress E2E tests for
 Stripe. Generating a webhook key and running the Stripe CLI server is
 always required for developing your Stripe functionality locally.
 
-The variables should be added either in `.env.test` or as part of your CI 
-environment. 
+The variables should be added either in `.env.test` or as part of your CI
+environment.
 
-NB: The secret keys should not be added to the repository - even 
-though these are test keys. Instead - please add them to your CI 
+NB: The secret keys should not be added to the repository - even
+though these are test keys. Instead - please add them to your CI
 environment - such as Github Actions.
 
-The test API keys should be added as secrets - while the variable 
+The test API keys should be added as secrets - while the variable
 ENABLE_STRIPE_TESTING should be added as a simple variable.
 
 To generate a webhook key, run the following command:

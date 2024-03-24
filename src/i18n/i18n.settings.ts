@@ -19,7 +19,8 @@ export const defaultI18nNamespaces = [
   'profile',
   'subscription',
   'onboarding',
-  'chatbot'
+  'chatbot',
+  'department'
 ];
 
 function getI18nSettings(

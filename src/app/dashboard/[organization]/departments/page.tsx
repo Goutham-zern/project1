@@ -7,24 +7,17 @@ import CreateChatbotModal from '../components/CreateChatbotModal';
 import { PlusCircleIcon } from '@heroicons/react/24/outline';
 import { PageBody } from '~/core/ui/Page';
 import Button from '~/core/ui/Button';
-import Heading from '~/core/ui/Heading';
 import DepartmentList from './components/departmentList';
-import CreateDepartmentModal from './components/createDepartmentModel';
+import CreateDepartmentButton from './components/CreateDepartmentButton';
+const departments = ({ searchParams } : { searchParams: {success: string} } ) => {
 
-const departments = () => {
     return (
     <>
       <AppHeader
-        title={<Trans i18nKey={'common:departmentHeading'} />}
-        description={<Trans i18nKey={'common:departmentSubHeading'} />}
+        title={<Trans i18nKey={'department:departmentHeading'} />}
+        description={<Trans i18nKey={'department:departmentSubHeading'} />}
       >
-        <CreateDepartmentModal canCreateDepartment={true}>
-          <Button size={'sm'} variant={'outline'}>
-            <PlusCircleIcon className={'w-4 mr-2'} />
-
-            <span>Add Department</span>
-          </Button>
-        </CreateDepartmentModal>
+        <CreateDepartmentButton />
       </AppHeader>
 
       <PageBody>

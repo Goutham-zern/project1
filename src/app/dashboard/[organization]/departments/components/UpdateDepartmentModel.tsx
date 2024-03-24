@@ -21,7 +21,7 @@ const UpdateDepartmentModal: React.FC<{
   }) => void;
 }> = ({ isOpen, setIsOpen, departmentData, onUpdateDepartment }) => {
   const [error, setError] = useState<boolean>(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{ name: string, imageFile: File | null }>({
     name: departmentData.name,
     imageFile: null,
   });
@@ -32,6 +32,7 @@ const UpdateDepartmentModal: React.FC<{
   
     try {
       // Upload image to Supabase storage
+      console.log(formData.imageFile);
       const imageUrl: any = await uploadImageToSupabase(formData.name, formData.imageFile); 
       console.log('Uploaded image to')
       console.log(imageUrl)
@@ -53,21 +54,23 @@ const UpdateDepartmentModal: React.FC<{
     }
   };
 
-  const handleChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const { name, value, files } = event.target;
-    if (name === 'imageFile') {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, files } = event.target;
+    if (name === 'imageFile' && files && files.length > 0) {
+      // Since the input allows selecting multiple files, we'll only take the first one
+      const imageFile = files[0];
       setFormData({
         ...formData,
+        imageFile: imageFile,
       });
     } else {
       setFormData({
         ...formData,
-        [name]: value,
+        [name]: event.target.value,
       });
     }
   };
+  
 
   return (
     <Modal heading={'Update Department'} isOpen={isOpen} setIsOpen={setIsOpen}>

@@ -15,14 +15,11 @@ import Button from '~/core/ui/Button';
 import { insertChatbot } from '~/lib/chatbots/mutations';
 import Trans from '~/core/ui/Trans';
 
-
 function CreateChatbotModal(
   props: React.PropsWithChildren<{
     canCreateChatbot: boolean;
   }>,
 ) {
-
-
   return (
     <Modal Trigger={props.children} heading={
       <Trans i18nKey={'chatbot:createChatbotModalHeading'} />

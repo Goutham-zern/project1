@@ -106,14 +106,14 @@ function getEnv() {
 
 async function confirmEmail(email: string) {
   const apiUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const apiKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const apiKey = process.env.NEXT_SUPABASE_SERVICE_ROLE_KEY;
 
   if (!apiUrl) {
     throw new Error(`NEXT_PUBLIC_SUPABASE_URL not provided`);
   }
 
   if (!apiKey) {
-    throw new Error(`SUPABASE_SERVICE_ROLE_KEY not provided`);
+    throw new Error(`NEXT_SUPABASE_SERVICE_ROLE_KEY not provided`);
   }
 
   const client = new SupabaseClient(apiUrl, apiKey);
